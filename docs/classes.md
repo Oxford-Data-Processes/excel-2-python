@@ -28,3 +28,5 @@ Attributes:
 
 - name: str
 - range: CellRange
+- header_location: ['left', 'top']
+- header_values: list[str]

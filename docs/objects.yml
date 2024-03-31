@@ -1,0 +1,84 @@
+objects:
+  excel_raw_file_path:
+    Type: str
+    Description: "Path to raw Excel"
+
+  excel_raw:
+    Type: ExcelFile
+    Description: "Loaded raw Excel"
+
+  excel_reduced_file_path:
+    Type: str
+    Description: "Path to Excel with only two rows per table"
+
+  excel_reduced:
+    Type: ExcelFile
+    Description: "Loaded raw Excel file"
+
+  excel_reduced_clean:
+    Type: ExcelFile
+    Description: "Excel with only two rows per table with formulas cleaned"
+
+  extracted_tables:
+    Type: "dict[Worksheet, list[Table]]"
+    Description: "Located tables inside an Excel with table metadata"
+
+  series_data:
+    Type: "dict[UUID, list[Series]]"
+    Description: "Collection of series"
+
+  formula_1:
+    Type: str
+    Description: "First Excel formula inside a series"
+
+  formula_2:
+    Type: str
+    Description: "Second Excel formula inside a series"
+
+  formula_1_ast:
+    Type: xlcalculator.ast_nodes.ASTNode
+    Description: "Represents the starting node of the AST for formula_1, which can be traversed"
+
+  formula_2_ast:
+    Type: xlcalculator.ast_nodes.ASTNode
+    Description: "Represents the starting node of the AST for formula_2, which can be traversed"
+
+  formula_1_ast_series:
+    Type: xlcalculator.ast_nodes.ASTNode
+    Description: "Represents the starting node of the AST for formula_1, but with SeriesRange objects instead of RangeNode objects"
+
+  formula_2_ast_series:
+    Type: xlcalculator.ast_nodes.ASTNode
+    Description: "Represents the starting node of the AST for formula_2, but with SeriesRange objects instead of RangeNode objects"
+
+  ast_generator:
+    Type: ASTGenerator
+    Description: "An object with a get_ast() method that returns the ast of the nth index"
+
+  ast_generator_python:
+    Type: ASTGeneratorPython
+    Description: "An object with a get_ast_python() method but where the ast output has PythonFunction objects instead of FunctionNode objects."
+
+  ast_generator_collection:
+    Type: "dict[UUID, ASTGeneratorPython]"
+    Description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects"
+
+  ast:
+    Type: xlcalculator.ast_nodes.ASTNode
+    Description: "Output of the get_ast() method from the ASTGenerator class"
+
+  ast_python:
+    Type: xlcalculator.ast_nodes.ASTNode
+    Description: "Output of the get_ast_python() method from the ASTGeneratorPython class"
+
+  series_dependencies:
+    Type: "dict[UUID, list[UUID]]"
+    Description: "Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series"
+
+  sorted_dag:
+    Type: "list[UUID]"
+    Description: "List of series_ids in order of execution"
+
+  python_pipeline:
+    Type: str
+    Description: "Python pipeline code"

@@ -1,0 +1,152 @@
+classes:
+  - name: ExcelFile
+    type: Dataclass
+    attributes:
+      - name: file_path
+        type: str
+      - name: workbook
+        type: openpyxl.Workbook
+
+  - name: Worksheet
+    type: Dataclass
+    attributes:
+      - name: sheet_name
+        type: str
+      - name: workbook_name
+        type: Optional[str]
+      - name: worksheet
+        type: Optional[openpyxl.Worksheet]
+
+  - name: Cell
+    type: Dataclass
+    attributes:
+      - name: column
+        type: int
+      - name: row
+        type: int
+      - name: coordinate
+        type: str
+
+  - name: CellRange
+    type: Dataclass
+    attributes:
+      - name: start_cell
+        type: Cell
+      - name: end_cell
+        type: Cell
+
+  - name: HeaderLocation
+    type: Enum
+    attributes:
+      - name: TOP
+        value: "top"
+      - name: LEFT
+        value: "left"
+
+  - name: Table
+    type: Dataclass
+    attributes:
+      - name: name
+        type: str
+      - name: range
+        type: CellRange
+      - name: header_location
+        type: HeaderLocation
+      - name: header_values
+        type: list[str]
+
+  - name: SeriesDataType
+    type: Enum
+    attributes:
+      - name: INT
+        value: "int"
+      - name: STR
+        value: "str"
+      - name: FLOAT
+        value: "float"
+      - name: BOOL
+        value: "bool"
+
+  - name: Series
+    type: Dataclass
+    attributes:
+      - name: series_id
+        type: UUID
+      - name: worksheet
+        type: Worksheet
+      - name: series_header
+        type: str
+      - name: formulas
+        type: list[str]
+      - name: values
+        type: list[Union[int, str, float, bool]]
+      - name: header_location
+        type: HeaderLocation
+      - name: series_starting_cell
+        type: Cell
+      - name: series_length
+        type: int
+      - name: series_data_type
+        type: SeriesDataType
+
+  - name: SeriesRange
+    type: Dataclass
+    attributes:
+      - name: series
+        type: list[Series]
+      - name: start_index
+        type: int
+      - name: end_index
+        type: int
+
+  - name: ASTGenerator
+    type: Regular
+    attributes:
+      - name: formula_1_series
+        type: xlcalculator.ast_nodes.ASTNode
+      - name: formula_2_series
+        type: xlcalculator.ast_nodes.ASTNode
+    methods:
+      - name: get_ast
+        type: Instance
+        inputs:
+          - name: index
+            type: int
+        output:
+          - name: ast
+            type: xlcalculator.ast_nodes.ASTNode
+
+  - name: ASTGeneratorPython
+    type: Regular
+    methods:
+      - name: get_ast_python
+        type: Instance
+        inputs:
+          - name: index
+            type: int
+          - name: ast
+            type: xlcalculator.ast_nodes.ASTNode
+        output:
+          - name: ast_python
+            type: xlcalculator.ast_nodes.ASTNode
+
+  - name: ExcelLoader
+    type: Regular
+    methods:
+      - name: load_file
+        type: Static
+        inputs:
+          - name: file_path
+            type: str
+        output:
+          - name: excel_file
+            type: ExcelFile
+
+  - name: ExcelCompatibilityChecker
+    type: Regular
+    methods:
+      - name: check_file
+        type: Static
+        inputs:
+          - name: excel_file
+            type: ExcelFile

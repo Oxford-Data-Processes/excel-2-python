@@ -58,6 +58,7 @@ Attributes:
 Attributes:
 
 - series_id: UUID
+- worksheet: Worksheet
 - series_header: str
 - formulas: list[str]
 - values: list[Union[int, str, float, bool]]
@@ -84,3 +85,11 @@ Attributes:
 Methods:
 
 - get_ast(index: int)
+
+### ASTGeneratorPython
+
+Attributes
+
+Methods:
+
+- get_ast_python(index: int)

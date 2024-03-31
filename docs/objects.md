@@ -211,4 +211,6 @@ xlcalculator.ast_nodes.FunctionNode(tvalue='SUM',ttype='function')
 - Type: dict[UUID, list[UUID]]
 - Description: Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series
 
-###
+### dag
+
+- Type: dict[UUID, list[UUID]]

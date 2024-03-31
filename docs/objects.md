@@ -69,75 +69,84 @@
 
 ```python
 {
-    Worksheet(sheet_name="Sheet1"): {
-        CellRange(coordinates='C12:D12'): Series(
-            series_header='horizontal_column_1',
-            formulas=['=B3', '=C3'],
-            values=[1, 2],
-            header_location=HeaderLocation.LEFT,
-            series_starting_cell=Cell(row=12, column=3),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        ),
-        CellRange(coordinates='C13:D13'): Series(
-            series_header='horizontal_column_2',
-            formulas=['=B4', '=C4'],
-            values=[3, 4],
-            header_location=HeaderLocation.LEFT,
-            series_starting_cell=Cell(row=13, column=3),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        ),
-        CellRange(coordinates='B3:B4'): Series(
-            series_header='col_1',
-            formulas=[None, None],
-            values=[1, 3],
-            header_location=HeaderLocation.TOP,
-            series_starting_cell=Cell(row=3, column=2),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        )
-    },
-    Worksheet(sheet_name="Sheet2"): {
-        CellRange(coordinates='A11:A12'): Series(
-            series_header='col1',
-            formulas=['=B2', '=B3'],
-            values=[1, 4],
-            header_location=HeaderLocation.TOP,
-            series_starting_cell=Cell(row=11, column=1),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        ),
-        CellRange(coordinates='B11:B12'): Series(
-            series_header='col2',
-            formulas=['=C2', '=C3'],
-            values=[2, 5],
-            header_location=HeaderLocation.TOP,
-            series_starting_cell=Cell(row=11, column=2),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        ),
-        CellRange(coordinates='B2:C2'): Series(
-            series_header='horizontal_col_1',
-            formulas=[None, None],
-            values=[1, 2],
-            header_location=HeaderLocation.LEFT,
-            series_starting_cell=Cell(row=2, column=2),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        ),
-        CellRange(coordinates='B3:C3'): Series(
-            series_header='horizontal_col_2',
-            formulas=[None, None],
-            values=[4, 5],
-            header_location=HeaderLocation.LEFT,
-            series_starting_cell=Cell(row=3, column=2),
-            series_length=2,
-            data_type=SeriesDataType.INT
-        )
-    }
+    "uuid1": Series(
+        series_id="uuid1",
+        worksheet=Worksheet(sheet_name="Sheet1"),
+        series_header='horizontal_column_1',
+        formulas=['=B3', '=C3'],
+        values=[1, 2],
+        header_location=HeaderLocation.LEFT,
+        series_starting_cell=Cell(row=12, column=3),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    ),
+    "uuid2": Series(
+        series_id="uuid2",
+        worksheet=Worksheet(sheet_name="Sheet1"),
+        series_header='horizontal_column_2',
+        formulas=['=B4', '=C4'],
+        values=[3, 4],
+        header_location=HeaderLocation.LEFT,
+        series_starting_cell=Cell(row=13, column=3),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    ),
+    "uuid3": Series(
+        series_id="uuid3",
+        worksheet=Worksheet(sheet_name="Sheet1"),
+        series_header='col_1',
+        formulas=[None, None],
+        values=[1, 3],
+        header_location=HeaderLocation.TOP,
+        series_starting_cell=Cell(row=3, column=2),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    ),
+    "uuid4": Series(
+        series_id="uuid4",
+        worksheet=Worksheet(sheet_name="Sheet2"),
+        series_header='col1',
+        formulas=['=B2', '=B3'],
+        values=[1, 4],
+        header_location=HeaderLocation.TOP,
+        series_starting_cell=Cell(row=11, column=1),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    ),
+    "uuid5": Series(
+        series_id="uuid5",
+        worksheet=Worksheet(sheet_name="Sheet2"),
+        series_header='col2',
+        formulas=['=C2', '=C3'],
+        values=[2, 5],
+        header_location=HeaderLocation.TOP,
+        series_starting_cell=Cell(row=11, column=2),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    ),
+    "uuid6": Series(
+        series_id="uuid6",
+        worksheet=Worksheet(sheet_name="Sheet2"),
+        series_header='horizontal_col_1',
+        formulas=[None, None],
+        values=[1, 2],
+        header_location=HeaderLocation.LEFT,
+        series_starting_cell=Cell(row=2, column=2),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    ),
+    "uuid7": Series(
+        series_id="uuid7",
+        worksheet=Worksheet(sheet_name="Sheet2"),
+        series_header='horizontal_col_2',
+        formulas=[None, None],
+        values=[4, 5],
+        header_location=HeaderLocation.LEFT,
+        series_starting_cell=Cell(row=3, column=2),
+        series_length=2,
+        data_type=SeriesDataType.INT
+    )
 }
-
 ```
 
 ### formula_1
@@ -185,4 +194,21 @@ xlcalculator.ast_nodes.FunctionNode(tvalue='SUM',ttype='function')
 ### ast_generator
 
 - Type: ASTGenerator
-- Description: Returns an object with a get_ast() method that returns the ast of the nth index
+- Description: An object with a get_ast() method that returns the ast of the nth index
+
+### ast_generator_python
+
+- Type: ASTGeneratorPython
+- Description: An object with a get_ast_python() method but where the ast output has PythonFunction objects instead of FunctionNode objects.
+
+### ast_generator_collection
+
+- Type: dict[UUID, ASTGeneratorPython]
+- Description: Dictionary where keys are series_id values and the values are ASTGeneratorPython objects
+
+### series_dependencies
+
+- Type: dict[UUID, list[UUID]]
+- Description: Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series
+
+###

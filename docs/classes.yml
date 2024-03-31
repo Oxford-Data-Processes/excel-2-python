@@ -1,6 +1,7 @@
 classes:
   - name: ExcelFile
-    type: Dataclass
+    type: dataclass
+    description: "Represents an Excel file"
     attributes:
       - name: file_path
         type: str
@@ -8,7 +9,8 @@ classes:
         type: openpyxl.Workbook
 
   - name: Worksheet
-    type: Dataclass
+    type: dataclass
+    description: "Represents an Excel worksheet"
     attributes:
       - name: sheet_name
         type: str
@@ -18,7 +20,8 @@ classes:
         type: Optional[openpyxl.Worksheet]
 
   - name: Cell
-    type: Dataclass
+    type: dataclass
+    description: "Represents an Excel cell"
     attributes:
       - name: column
         type: int
@@ -28,7 +31,8 @@ classes:
         type: str
 
   - name: CellRange
-    type: Dataclass
+    type: dataclass
+    description: "Represents a range of cells"
     attributes:
       - name: start_cell
         type: Cell
@@ -36,7 +40,8 @@ classes:
         type: Cell
 
   - name: HeaderLocation
-    type: Enum
+    type: enum
+    description: "Represents the location of the header"
     attributes:
       - name: TOP
         value: "top"
@@ -44,7 +49,8 @@ classes:
         value: "left"
 
   - name: Table
-    type: Dataclass
+    type: dataclass
+    description: "Represents a table"
     attributes:
       - name: name
         type: str
@@ -56,7 +62,8 @@ classes:
         type: list[str]
 
   - name: SeriesDataType
-    type: Enum
+    type: enum
+    description: "Represents the data type of a series"
     attributes:
       - name: INT
         value: "int"
@@ -68,7 +75,8 @@ classes:
         value: "bool"
 
   - name: Series
-    type: Dataclass
+    type: dataclass
+    description: "Represents a series"
     attributes:
       - name: series_id
         type: UUID
@@ -90,7 +98,8 @@ classes:
         type: SeriesDataType
 
   - name: SeriesRange
-    type: Dataclass
+    type: dataclass
+    description: "Represents a range of cells for a series"
     attributes:
       - name: series
         type: list[Series]
@@ -100,7 +109,8 @@ classes:
         type: int
 
   - name: ASTGenerator
-    type: Regular
+    type: regular
+    description: "An object with a get_ast() method that returns the ast of the nth index"
     attributes:
       - name: formula_1_series
         type: xlcalculator.ast_nodes.ASTNode
@@ -108,7 +118,7 @@ classes:
         type: xlcalculator.ast_nodes.ASTNode
     methods:
       - name: get_ast
-        type: Instance
+        type: instance
         inputs:
           - name: index
             type: int
@@ -117,10 +127,11 @@ classes:
             type: xlcalculator.ast_nodes.ASTNode
 
   - name: ASTGeneratorPython
-    type: Regular
+    type: regular
+    description: "An object with a get_ast_python() method but where the ast output has PythonFunction objects instead of FunctionNode objects."
     methods:
       - name: get_ast_python
-        type: Instance
+        type: instance
         inputs:
           - name: index
             type: int
@@ -131,10 +142,11 @@ classes:
             type: xlcalculator.ast_nodes.ASTNode
 
   - name: ExcelLoader
-    type: Regular
+    type: regular
+    description: "Loads an Excel file"
     methods:
       - name: load_file
-        type: Static
+        type: static
         inputs:
           - name: file_path
             type: str
@@ -143,10 +155,46 @@ classes:
             type: ExcelFile
 
   - name: ExcelCompatibilityChecker
-    type: Regular
+    type: regular
+    description: "Checks the compatibility of raw and reduced Excel files"
     methods:
       - name: check_file
-        type: Static
+        type: static
         inputs:
-          - name: excel_file
+          - name: excel_raw
             type: ExcelFile
+          - name: excel_reduced
+            type: ExcelFile
+          - name: extracted_tables
+            type: dict[Worksheet, list[Table]]
+        output:
+          - name: is_compatible
+            type: bool
+
+  - name: ExcelValidator
+    type: regular
+    description: "Validates an Excel file"
+    methods:
+      - name: validate_excel
+        type: static
+        inputs:
+          - name: excel_reduced
+            type: ExcelFile
+        output:
+          - name: is_valid
+            type: bool
+
+  - name: SeriesExtractor
+    type: regular
+    description: "Extracts series from an Excel file"
+    methods:
+      - name: extract_series
+        type: static
+        inputs:
+          - name: excel_reduced_clean
+            type: ExcelFile
+          - name: extracted_tables
+            type: dict[Worksheet, list[Table]]
+        output:
+          - name: series_data
+            type: dict[UUID, list[Series]]

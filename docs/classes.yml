@@ -99,7 +99,7 @@ classes:
 
   - name: SeriesRange
     type: dataclass
-    description: "Represents a range of cells for a series"
+    description: "Represents a range of values for a collection of series"
     attributes:
       - name: series
         type: list[Series]
@@ -198,3 +198,124 @@ classes:
         output:
           - name: series_data
             type: dict[UUID, list[Series]]
+
+  - name: ExcelCleaner
+    type: regular
+    description: "Cleans an Excel file"
+    methods:
+      - name: clean_excel
+        type: static
+        inputs:
+          - name: excel_reduced
+            type: ExcelFile
+        output:
+          - name: excel_reduced_clean
+            type: ExcelFile
+
+  - name: TableFinder
+    type: regular
+    description: "Finds tables in an Excel file"
+    methods:
+      - name: find_tables
+        type: static
+        inputs:
+          - name: excel_reduced_clean
+            type: ExcelFile
+        output:
+          - name: extracted_tables
+            type: dict[Worksheet, list[Table]]
+
+  - name: FormulaParser
+    type: regular
+    description: "Parses formulas in an Excel file"
+    methods:
+      - name: parse_formula
+        type: static
+        inputs:
+          - name: formula
+            type: str
+        output:
+          - name: formula_ast
+            type: xlcalculator.ast_nodes.ASTNode
+
+  - name: SeriesImplementer
+    type: regular
+    description: "Implements series in an AST"
+    methods:
+      - name: implement_series
+        type: static
+        inputs:
+          - name: formula_ast
+            type: xlcalculator.ast_nodes.ASTNode
+        output:
+          - name: formula_ast_series
+            type: xlcalculator.ast_nodes.ASTNode
+
+  - name: FormulaGenerator
+    type: regular
+    description: "Creates instances of ASTGenerator given two formula_ast objects"
+    methods:
+      - name: get_ast_generator
+        type: static
+        inputs:
+          - name: formula_1_ast_series
+            type: xlcalculator.ast_nodes.ASTNode
+          - name: formula_2_ast_series
+            type: xlcalculator.ast_nodes.ASTNode
+        output:
+          - name: ast_generator
+            type: ASTGenerator
+
+  - name: FunctionReplacer
+    type: regular
+    description: "Replaces FunctionNode objects with PythonFunction objects in an AST"
+    methods:
+      - name: replace_functions
+        type: static
+        inputs:
+          - name: ast_generator
+            type: ASTGenerator
+        output:
+          - name: ast_generator_python
+            type: ASTGeneratorPython
+
+  - name: FunctionTranslator
+    type: regular
+    description: "Translates Excel function to Python function"
+    methods:
+      - name: translate_function
+        type: static
+        inputs:
+          - name: excel_function
+            type: xlcalculator.ast_nodes.FunctionNode
+        output:
+          - name: python_function
+            type: Callable
+
+  - name: DAGSorter
+    type: regular
+    description: "Sorts a directed acyclic graph"
+    methods:
+      - name: sort_dag
+        type: static
+        inputs:
+          - name: series_dependencies
+            type: dict[UUID, list[UUID]]
+        output:
+          - name: sorted_dag
+            type: list[UUID]
+
+  - name: PythonPipelineBuilder
+    type: regular
+    description: "Builds a Python pipeline"
+    methods:
+      - name: build_pipeline
+        type: static
+        inputs:
+          - name: sorted_dag
+            type: list[UUID]
+          - name: ast_generator_collection
+            type: dict[UUID, ASTGeneratorPython]
+        output:
+          - name: python_pipeline
+            type: str

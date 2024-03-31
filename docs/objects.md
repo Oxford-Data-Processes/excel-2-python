@@ -171,3 +171,18 @@ xlcalculator.ast_nodes.FunctionNode(tvalue='SUM',ttype='function')
 ```python
 xlcalculator.ast_nodes.FunctionNode(tvalue='SUM',ttype='function')
 ```
+
+### formula_1_ast_series
+
+- Type: xlcalculator.ast_nodes.ASTNode
+- Description: Represents the starting node of the AST for formula_1, but with SeriesRange objects instead of RangeNode objects
+
+### formula_2_ast_series
+
+- Type: xlcalculator.ast_nodes.ASTNode
+- Description: Represents the starting node of the AST for formula_2, but with SeriesRange objects instead of RangeNode objects
+
+### ast_generator
+
+- Type: ASTGenerator
+- Description: Returns an object with a get_ast() method that returns the ast of the nth index

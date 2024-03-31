@@ -57,10 +57,30 @@ Attributes:
 
 Attributes:
 
+- series_id: UUID
 - series_header: str
 - formulas: list[str]
 - values: list[Union[int, str, float, bool]]
 - header_location: HeaderLocation
 - series_starting_cell: Cell
 - series_length: int
-- series_datat_type: SeriesDataType
+- series_data_type: SeriesDataType
+
+### SeriesRange
+
+Attributes:
+
+- series: list[Series]
+- start_index: int
+- end_index: int
+
+### ASTGenerator
+
+Attributes:
+
+- formula_1_series: xlcalculator.ast_nodes.ASTNode
+- formula_2_series: xlcalculator.ast_nodes.ASTNode
+
+Methods:
+
+- get_ast(index: int)

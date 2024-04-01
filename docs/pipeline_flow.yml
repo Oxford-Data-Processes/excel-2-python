@@ -14,6 +14,14 @@ series_extraction:
   - step: ExcelCompatibilityChecker.check_file
     inputs:
       - excel_raw: { type: ExcelFile, description: "Loaded raw Excel" }
+      - extracted_tables:
+          {
+            type: "dict[Worksheet, list[Table]]",
+            description: "Located tables inside an Excel with table metadata",
+          }
+    outputs:
+      - is_compatible:
+          { type: bool, description: "True if the files are compatible" }
     decision_point: is_compatible
     actions:
       - result: true
@@ -24,6 +32,8 @@ series_extraction:
   - step: ExcelValidator.validate_excel
     inputs:
       - excel_reduced: { type: ExcelFile, description: "Loaded raw Excel file" }
+    outputs:
+      - is_valid: { type: bool, description: "True if the Excel is valid" }
     decision_point: is_valid
     actions:
       - result: true
@@ -34,6 +44,7 @@ series_extraction:
   - step: ExcelCleaner.clean_excel
     inputs:
       - excel_reduced: { type: ExcelFile, description: "Loaded raw Excel file" }
+      - is_valid: { type: bool, description: "True if the Excel is valid" }
     outputs:
       - excel_reduced_clean:
           {
@@ -69,6 +80,8 @@ series_extraction:
             type: "dict[Worksheet, list[Table]]",
             description: "Located tables inside an Excel with table metadata",
           }
+      - is_compatible:
+          { type: bool, description: "True if the files are compatible" }
     outputs:
       - series_data:
           {

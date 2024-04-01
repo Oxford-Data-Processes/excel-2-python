@@ -1,8 +1,8 @@
-process_flow:
+series_extraction:
   - step: ExcelLoader.load_file
     inputs:
       - excel_raw_file_path
-      - excel_reduce_d_file_path
+      - excel_reduced_file_path
     outputs:
       - excel_raw
       - excel_reduced
@@ -54,6 +54,7 @@ process_flow:
     outputs:
       - series_data_iterator
 
+ast_building:
   - step: FormulaParser.parse_formula
     inputs:
       - formula_1
@@ -70,6 +71,7 @@ process_flow:
       - formula_1_ast_series
       - formula_2_ast_series
 
+ast_transformation:
   - step: FormulaGenerator.get_ast_generator
     inputs:
       - formula_1_ast_series
@@ -80,7 +82,8 @@ process_flow:
   - step: FunctionReplacer.replace_functions
     inputs:
       - ast_generator
-      - FunctionTranslator
+    composition:
+      - util_class: FunctionTranslator
     outputs:
       - ast_generator_python
 
@@ -90,6 +93,7 @@ process_flow:
     outputs:
       - ast_generator_collection
 
+pipeline_building:
   - step: SeriesDependenciesBuilder.build_dependencies
     inputs:
       - formula_1_ast_series_list

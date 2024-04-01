@@ -1,15 +1,19 @@
 series_extraction:
   - step: ExcelLoader.load_file
     inputs:
-      - excel_raw_file_path
-      - excel_reduced_file_path
+      - excel_raw_file_path: { type: str, description: "Path to raw Excel" }
+      - excel_reduced_file_path:
+          {
+            type: str,
+            description: "Path to Excel with only two rows per table",
+          }
     outputs:
-      - excel_raw
-      - excel_reduced
+      - excel_raw: { type: ExcelFile, description: "Loaded raw Excel" }
+      - excel_reduced: { type: ExcelFile, description: "Loaded raw Excel file" }
 
   - step: ExcelCompatibilityChecker.check_file
     inputs:
-      - excel_raw
+      - excel_raw: { type: ExcelFile, description: "Loaded raw Excel" }
     decision_point: is_compatible
     actions:
       - result: true
@@ -19,7 +23,7 @@ series_extraction:
 
   - step: ExcelValidator.validate_excel
     inputs:
-      - excel_reduced
+      - excel_reduced: { type: ExcelFile, description: "Loaded raw Excel file" }
     decision_point: is_valid
     actions:
       - result: true
@@ -29,87 +33,198 @@ series_extraction:
 
   - step: ExcelCleaner.clean_excel
     inputs:
-      - excel_reduced
+      - excel_reduced: { type: ExcelFile, description: "Loaded raw Excel file" }
     outputs:
-      - excel_reduced_clean
+      - excel_reduced_clean:
+          {
+            type: ExcelFile,
+            description: "Excel with only two rows per table with formulas cleaned",
+          }
     next_step: TableFinder.find_tables
 
   - step: TableFinder.find_tables
     inputs:
-      - excel_reduced_clean
+      - excel_reduced_clean:
+          {
+            type: ExcelFile,
+            description: "Excel with only two rows per table with formulas cleaned",
+          }
     outputs:
-      - extracted_tables
+      - extracted_tables:
+          {
+            type: "dict[Worksheet, list[Table]]",
+            description: "Located tables inside an Excel with table metadata",
+          }
     next_step: SeriesExtractor.extract_series
 
   - step: SeriesExtractor.extract_series
     inputs:
-      - excel_reduced_clean
-      - extracted_tables
+      - excel_reduced_clean:
+          {
+            type: ExcelFile,
+            description: "Excel with only two rows per table with formulas cleaned",
+          }
+      - extracted_tables:
+          {
+            type: "dict[Worksheet, list[Table]]",
+            description: "Located tables inside an Excel with table metadata",
+          }
     outputs:
-      - series_data
+      - series_data:
+          {
+            type: "dict[UUID, list[Series]]",
+            description: "Collection of series",
+          }
 
   - step: SeriesIterator.iterate_series
     inputs:
-      - series_data
+      - series_data:
+          {
+            type: "dict[UUID, list[Series]]",
+            description: "Collection of series",
+          }
     outputs:
-      - series_data_iterator
+      - series_data_iterator:
+          { type: "Iterator[Series]", description: "Iterator over the series" }
 
 ast_building:
   - step: FormulaParser.parse_formula
     inputs:
-      - formula_1
-      - formula_2
+      - formula_1:
+          { type: str, description: "First Excel formula inside a series" }
+      - formula_2:
+          { type: str, description: "Second Excel formula inside a series" }
     outputs:
-      - formula_1_ast
-      - formula_2_ast
+      - formula_1_ast:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_1, which can be traversed",
+          }
+      - formula_2_ast:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_2, which can be traversed",
+          }
 
   - step: SeriesImplementer.implement_series
     inputs:
-      - formula_1_ast
-      - formula_2_ast
+      - formula_1_ast:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_1, which can be traversed",
+          }
+      - formula_2_ast:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_2, which can be traversed",
+          }
     outputs:
-      - formula_1_ast_series
-      - formula_2_ast_series
+      - formula_1_ast_series:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_1, but with SeriesRange objects instead of RangeNode objects",
+          }
+      - formula_2_ast_series:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_2, but with SeriesRange objects instead of RangeNode objects",
+          }
 
 ast_transformation:
   - step: FormulaGenerator.get_ast_generator
     inputs:
-      - formula_1_ast_series
-      - formula_2_ast_series
+      - formula_1_ast_series:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_1, but with SeriesRange objects instead of RangeNode objects",
+          }
+      - formula_2_ast_series:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_2, but with SeriesRange objects instead of RangeNode objects",
+          }
     outputs:
-      - ast_generator
+      - ast_generator:
+          {
+            type: ASTGenerator,
+            description: "An object with a get_ast() method that returns the ast of the nth index",
+          }
 
   - step: FunctionReplacer.replace_functions
     inputs:
-      - ast_generator
+      - ast_generator:
+          {
+            type: ASTGenerator,
+            description: "An object with a get_ast() method that returns the ast of the nth index",
+          }
     composition:
       - util_class: FunctionTranslator
     outputs:
-      - ast_generator_python
+      - ast_generator_python:
+          {
+            type: ASTGeneratorPython,
+            description: "An object with a get_ast_python() method but where the ast output has PythonFunction objects instead of FunctionNode objects.",
+          }
 
   - step: ASTGeneratorCollector.get_collection
     inputs:
-      - ast_generator_python
+      - ast_generator_python:
+          {
+            type: ASTGeneratorPython,
+            description: "An object with a get_ast_python() method but where the ast output has PythonFunction objects instead of FunctionNode objects.",
+          }
     outputs:
-      - ast_generator_collection
+      - ast_generator_collection:
+          {
+            type: "dict[UUID, ASTGeneratorPython]",
+            description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects",
+          }
 
 pipeline_building:
   - step: SeriesDependenciesBuilder.build_dependencies
     inputs:
-      - formula_1_ast_series_list
+      - formula_1_ast_series_list:
+          {
+            type: "list[xlcalculator.ast_nodes.ASTNode]",
+            description: "List of AST nodes for formula_1 with SeriesRange objects instead of RangeNode objects",
+          }
     outputs:
-      - series_dependencies
+      - series_dependencies:
+          {
+            type: "dict[UUID, list[UUID]]",
+            description: "Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series",
+          }
 
   - step: DAGSorter.sort_dag
     inputs:
-      - series_dependencies
+      - series_dependencies:
+          {
+            type: "dict[UUID, list[UUID]]",
+            description: "Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series",
+          }
     outputs:
-      - sorted_dag
+      - sorted_dag:
+          {
+            type: "list[UUID]",
+            description: "List of series_ids in order of execution",
+          }
 
   - step: PipelineBuilder.build_pipeline
     inputs:
-      - sorted_dag
-      - ast_generator_collection
-      - series_data
+      - sorted_dag:
+          {
+            type: "list[UUID]",
+            description: "List of series_ids in order of execution",
+          }
+      - ast_generator_collection:
+          {
+            type: "dict[UUID, ASTGeneratorPython]",
+            description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects",
+          }
+      - series_data:
+          {
+            type: "dict[UUID, list[Series]]",
+            description: "Collection of series",
+          }
     outputs:
-      - python_pipeline
+      - python_pipeline: { type: str, description: "Python pipeline code" }

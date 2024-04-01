@@ -17,7 +17,7 @@ series_extraction:
     decision_point: is_compatible
     actions:
       - result: true
-        next_step: ExcelValidator.validate_excel
+        next_step: SeriesExtractor.extract_series
       - result: false
         next_step: end_process
 

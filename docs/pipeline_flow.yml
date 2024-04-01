@@ -1,0 +1,111 @@
+process_flow:
+  - step: ExcelLoader.load_file
+    inputs:
+      - excel_raw_file_path
+      - excel_reduce_d_file_path
+    outputs:
+      - excel_raw
+      - excel_reduced
+
+  - step: ExcelCompatibilityChecker.check_file
+    inputs:
+      - excel_raw
+    decision_point: is_compatible
+    actions:
+      - result: true
+        next_step: ExcelValidator.validate_excel
+      - result: false
+        next_step: end_process
+
+  - step: ExcelValidator.validate_excel
+    inputs:
+      - excel_reduced
+    decision_point: is_valid
+    actions:
+      - result: true
+        next_step: ExcelCleaner.clean_excel
+      - result: false
+        next_step: end_process
+
+  - step: ExcelCleaner.clean_excel
+    inputs:
+      - excel_reduced
+    outputs:
+      - excel_reduced_clean
+    next_step: TableFinder.find_tables
+
+  - step: TableFinder.find_tables
+    inputs:
+      - excel_reduced_clean
+    outputs:
+      - extracted_tables
+    next_step: SeriesExtractor.extract_series
+
+  - step: SeriesExtractor.extract_series
+    inputs:
+      - excel_reduced_clean
+      - extracted_tables
+    outputs:
+      - series_data
+
+  - step: SeriesIterator.iterate_series
+    inputs:
+      - series_data
+    outputs:
+      - series_data_iterator
+
+  - step: FormulaParser.parse_formula
+    inputs:
+      - formula_1
+      - formula_2
+    outputs:
+      - formula_1_ast
+      - formula_2_ast
+
+  - step: SeriesImplementer.implement_series
+    inputs:
+      - formula_1_ast
+      - formula_2_ast
+    outputs:
+      - formula_1_ast_series
+      - formula_2_ast_series
+
+  - step: FormulaGenerator.get_ast_generator
+    inputs:
+      - formula_1_ast_series
+      - formula_2_ast_series
+    outputs:
+      - ast_generator
+
+  - step: FunctionReplacer.replace_functions
+    inputs:
+      - ast_generator
+      - FunctionTranslator
+    outputs:
+      - ast_generator_python
+
+  - step: ASTGeneratorCollector.get_collection
+    inputs:
+      - ast_generator_python
+    outputs:
+      - ast_generator_collection
+
+  - step: SeriesDependenciesBuilder.build_dependencies
+    inputs:
+      - formula_1_ast_series_list
+    outputs:
+      - series_dependencies
+
+  - step: DAGSorter.sort_dag
+    inputs:
+      - series_dependencies
+    outputs:
+      - sorted_dag
+
+  - step: PipelineBuilder.build_pipeline
+    inputs:
+      - sorted_dag
+      - ast_generator_collection
+      - series_data
+    outputs:
+      - python_pipeline

@@ -1,0 +1,9 @@
+openpyxl
+pandas
+xlcalculator
+# Dev packages
+mypy
+pre-commit
+pylint
+black
+pyyaml

@@ -312,6 +312,8 @@ classes:
       - name: build_pipeline
         type: static
         inputs:
+          - name: series_data
+            type: dict[UUID, list[Series]]
           - name: sorted_dag
             type: list[UUID]
           - name: ast_generator_collection

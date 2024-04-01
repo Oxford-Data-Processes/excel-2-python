@@ -1,0 +1,10 @@
+// ast_building
+digraph {
+	node [shape=box]
+	"FormulaParser.parse_formula" [label="FormulaParser.parse_formula
+Outputs: formula_1_ast, formula_2_ast"]
+	"SeriesImplementer.implement_series" [label="SeriesImplementer.implement_series
+Outputs: formula_1_ast_series, formula_2_ast_series"]
+	"FormulaParser.parse_formula" -> "SeriesImplementer.implement_series" [label=formula_1_ast]
+	"FormulaParser.parse_formula" -> "SeriesImplementer.implement_series" [label=formula_2_ast]
+}

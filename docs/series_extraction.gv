@@ -1,0 +1,28 @@
+// series_extraction
+digraph {
+	node [shape=box]
+	"ExcelLoader.load_file" [label="ExcelLoader.load_file
+Outputs: excel_raw, excel_reduced"]
+	"ExcelCompatibilityChecker.check_file" [label="ExcelCompatibilityChecker.check_file
+Outputs: is_compatible"]
+	"ExcelValidator.validate_excel" [label="ExcelValidator.validate_excel
+Outputs: is_valid"]
+	"ExcelCleaner.clean_excel" [label="ExcelCleaner.clean_excel
+Outputs: excel_reduced_clean"]
+	"TableFinder.find_tables" [label="TableFinder.find_tables
+Outputs: extracted_tables"]
+	"SeriesExtractor.extract_series" [label="SeriesExtractor.extract_series
+Outputs: series_data"]
+	"SeriesIterator.iterate_series" [label="SeriesIterator.iterate_series
+Outputs: series_data_iterator"]
+	"ExcelLoader.load_file" -> "ExcelCompatibilityChecker.check_file" [label=excel_raw]
+	"TableFinder.find_tables" -> "ExcelCompatibilityChecker.check_file" [label=extracted_tables]
+	"ExcelLoader.load_file" -> "ExcelValidator.validate_excel" [label=excel_reduced]
+	"ExcelLoader.load_file" -> "ExcelCleaner.clean_excel" [label=excel_reduced]
+	"ExcelValidator.validate_excel" -> "ExcelCleaner.clean_excel" [label=is_valid]
+	"ExcelCleaner.clean_excel" -> "TableFinder.find_tables" [label=excel_reduced_clean]
+	"ExcelCleaner.clean_excel" -> "SeriesExtractor.extract_series" [label=excel_reduced_clean]
+	"TableFinder.find_tables" -> "SeriesExtractor.extract_series" [label=extracted_tables]
+	"ExcelCompatibilityChecker.check_file" -> "SeriesExtractor.extract_series" [label=is_compatible]
+	"SeriesExtractor.extract_series" -> "SeriesIterator.iterate_series" [label=series_data]
+}

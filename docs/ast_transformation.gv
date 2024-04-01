@@ -1,0 +1,12 @@
+// ast_transformation
+digraph {
+	node [shape=box]
+	"FormulaGenerator.get_ast_generator" [label="FormulaGenerator.get_ast_generator
+Outputs: ast_generator"]
+	"FunctionReplacer.replace_functions" [label="FunctionReplacer.replace_functions
+Outputs: ast_generator_python"]
+	"ASTGeneratorCollector.get_collection" [label="ASTGeneratorCollector.get_collection
+Outputs: ast_generator_collection"]
+	"FormulaGenerator.get_ast_generator" -> "FunctionReplacer.replace_functions" [label=ast_generator]
+	"FunctionReplacer.replace_functions" -> "ASTGeneratorCollector.get_collection" [label=ast_generator_python]
+}

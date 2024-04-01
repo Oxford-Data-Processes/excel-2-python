@@ -1,0 +1,12 @@
+// pipeline_building
+digraph {
+	node [shape=box]
+	"SeriesDependenciesBuilder.build_dependencies" [label="SeriesDependenciesBuilder.build_dependencies
+Outputs: series_dependencies"]
+	"DAGSorter.sort_dag" [label="DAGSorter.sort_dag
+Outputs: sorted_dag"]
+	"PipelineBuilder.build_pipeline" [label="PipelineBuilder.build_pipeline
+Outputs: python_pipeline"]
+	"SeriesDependenciesBuilder.build_dependencies" -> "DAGSorter.sort_dag" [label=series_dependencies]
+	"DAGSorter.sort_dag" -> "PipelineBuilder.build_pipeline" [label=sorted_dag]
+}

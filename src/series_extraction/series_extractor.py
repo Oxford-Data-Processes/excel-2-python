@@ -1,4 +1,5 @@
 from openpyxl.utils import get_column_letter
+from objects import HeaderLocation
 
 
 class SeriesExtractor:
@@ -63,7 +64,7 @@ class SeriesExtractor:
                 header_location = table.header_location
                 header_values = table.header_values
 
-                if header_location == "top":
+                if header_location == HeaderLocation.TOP:
                     for col_index, header in enumerate(
                         header_values, start=start_column
                     ):
@@ -72,7 +73,7 @@ class SeriesExtractor:
                             data,
                             sheet,
                             header,
-                            header_location,
+                            header_location.value,
                             start_row,
                             end_row,
                             col_index,
@@ -86,7 +87,7 @@ class SeriesExtractor:
                             data,
                             sheet,
                             header,
-                            header_location,
+                            header_location.value,
                             start_column,
                             end_column,
                             row_index,

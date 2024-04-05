@@ -142,26 +142,40 @@ class TableFinder:
         return located_tables
 
     @staticmethod
-    def find_tables(excel_file: ExcelFile) -> Dict[Worksheet, List[Table]]:
+    def find_tables(
+        excel_file: ExcelFile,
+    ) -> Dict[Worksheet, List[Table]]:
         data = {}
-        for ws in excel_file.workbook_with_values.worksheets:
+        for ws_values, ws_formulas in zip(
+            excel_file.workbook_with_values.worksheets,
+            excel_file.workbook_with_formulas.worksheets,
+        ):
             worksheet = Worksheet(
-                sheet_name=ws.title,
+                sheet_name=ws_values.title,
                 workbook_file_path=None,
-                worksheet=ws,
+                worksheet=ws_values,
             )
             sheet_data = {}
-            for row in ws.iter_rows():
-                for cell in row:
-                    cell_coordinate = cell.coordinate
-                    cell_value = cell.value
+            for row_values, row_formulas in zip(
+                ws_values.iter_rows(), ws_formulas.iter_rows()
+            ):
+                for cell_values, cell_formulas in zip(row_values, row_formulas):
+                    cell_coordinate = cell_values.coordinate
+                    cell_value = cell_values.value
                     cell_value_type = type(cell_value).__name__
+                    formula = (
+                        cell_formulas.value
+                        if isinstance(cell_formulas.value, str)
+                        and cell_formulas.value.startswith("=")
+                        else None
+                    )
                     sheet_data[cell_coordinate] = {
                         "value": cell_value,
                         "value_type": cell_value_type,
-                        "row": cell.row,
-                        "column": cell.column,
+                        "row": cell_values.row,
+                        "column": cell_values.column,
                         "coordinate": cell_coordinate,
+                        "formula": formula,
                     }
             data[worksheet.sheet_name] = sheet_data
 

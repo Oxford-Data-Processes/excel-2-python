@@ -1,5 +1,17 @@
 from openpyxl.utils import get_column_letter
-from objects import HeaderLocation
+from objects import (
+    HeaderLocation,
+    ExcelFile,
+    Worksheet,
+    Table,
+    Series,
+    Cell,
+    SeriesDataType,
+)
+
+from typing import Dict, List
+
+from uuid import UUID, uuid4
 
 
 class SeriesExtractor:
@@ -97,3 +109,35 @@ class SeriesExtractor:
             tables_data[sheet] = sheet_data
 
         return tables_data
+
+    @staticmethod
+    def extract_series(
+        extracted_tables: Dict[Worksheet, List[Table]],
+        data: dict,
+    ) -> Dict[UUID, List[Series]]:
+        series_data = SeriesExtractor.extract_table_details(extracted_tables, data)
+
+        series = {}
+
+        for worksheet, table_data in series_data.items():
+            series[worksheet.sheet_name] = []
+            for range_identifier, series_data in table_data.items():
+                series[worksheet.sheet_name].append(
+                    Series(
+                        series_id=uuid4(),
+                        worksheet=worksheet,
+                        series_header=series_data["series_header"],
+                        formulas=series_data["row_formulas"],
+                        values=series_data["row_values"],
+                        header_location=HeaderLocation(series_data["header_location"]),
+                        series_starting_cell=Cell(
+                            column=series_data["series_starting_cell"]["column"],
+                            row=series_data["series_starting_cell"]["row"],
+                            coordinate=f"{get_column_letter(series_data['series_starting_cell']['column'])}{series_data['series_starting_cell']['row']}",
+                        ),
+                        series_length=int(series_data["series_length"]),
+                        series_data_type=SeriesDataType(series_data["data_type"]),
+                    )
+                )
+
+        return series

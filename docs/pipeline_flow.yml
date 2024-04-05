@@ -83,7 +83,7 @@ series_extraction:
       - is_compatible:
           { type: bool, description: "True if the files are compatible" }
     outputs:
-      - series_data:
+      - series:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",
@@ -91,13 +91,13 @@ series_extraction:
 
   - step: SeriesIterator.iterate_series
     inputs:
-      - series_data:
+      - series:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",
           }
     outputs:
-      - series_data_iterator:
+      - series_iterator:
           { type: "Iterator[Series]", description: "Iterator over the series" }
 
 ast_building:
@@ -234,7 +234,7 @@ pipeline_building:
             type: "dict[UUID, ASTGeneratorPython]",
             description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects",
           }
-      - series_data:
+      - series:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",

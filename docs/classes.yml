@@ -201,7 +201,7 @@ classes:
           - name: extracted_tables
             type: dict[Worksheet, list[Table]]
         outputs:
-          - name: series_data
+          - name: series
             type: dict[UUID, list[Series]]
 
   - name: ExcelCleaner
@@ -237,10 +237,10 @@ classes:
       - name: iterate_series
         type: static
         inputs:
-          - name: series_data
+          - name: series
             type: dict[UUID, list[Series]]
         outputs:
-          - name: series_data_iterator
+          - name: series_iterator
             type: Iterator[Series]
 
   - name: FormulaParser
@@ -364,7 +364,7 @@ classes:
       - name: build_pipeline
         type: static
         inputs:
-          - name: series_data
+          - name: series
             type: dict[UUID, list[Series]]
           - name: sorted_dag
             type: list[UUID]

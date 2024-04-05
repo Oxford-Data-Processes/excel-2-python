@@ -20,6 +20,10 @@ class ExcelCleaner:
                 for cell in row:
                     if cell.data_type == "f":
                         formula = cell.value
+
+                        if isinstance(formula, openpyxl.worksheet.formula.ArrayFormula):
+                            formula = formula.text
+
                         formula = ExcelCleaner.remove_quotes(formula)
                         formula = ExcelCleaner.remove_dollar_sign_from_excel_formula(
                             formula

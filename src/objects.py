@@ -9,13 +9,14 @@ import openpyxl
 @dataclass
 class ExcelFile:
     file_path: str
-    workbook: openpyxl.Workbook
+    workbook_with_formulas: openpyxl.Workbook
+    workbook_with_values: openpyxl.Workbook
 
 
-@dataclass
+@dataclass(frozen=True)
 class Worksheet:
     sheet_name: str
-    workbook_name: Optional[str]
+    workbook_file_path: Optional[str]
     worksheet: Optional[openpyxl.worksheet.worksheet.Worksheet]
 
 

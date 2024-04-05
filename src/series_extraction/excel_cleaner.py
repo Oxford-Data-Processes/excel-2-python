@@ -15,7 +15,7 @@ class ExcelCleaner:
 
     @staticmethod
     def clean_excel(excel_reduced: ExcelFile) -> ExcelFile:
-        for sheet in excel_reduced.workbook.worksheets:
+        for sheet in excel_reduced.workbook_with_formulas.worksheets:
             for row in sheet.iter_rows():
                 for cell in row:
                     if cell.data_type == "f":

@@ -5,7 +5,9 @@ classes:
     attributes:
       - name: file_path
         type: str
-      - name: workbook
+      - name: workbook_with_formulas
+        type: openpyxl.Workbook
+      - name: workbook_with_values
         type: openpyxl.Workbook
 
   - name: Worksheet
@@ -14,7 +16,7 @@ classes:
     attributes:
       - name: sheet_name
         type: str
-      - name: workbook_name
+      - name: workbook_file_path
         type: Optional[str]
       - name: worksheet
         type: Optional[openpyxl.Worksheet]

@@ -121,7 +121,7 @@ class SeriesExtractor:
 
         for worksheet, table_data in series_data.items():
             series[worksheet.sheet_name] = []
-            for range_identifier, series_data in table_data.items():
+            for _, series_data in table_data.items():
                 series[worksheet.sheet_name].append(
                     Series(
                         series_id=uuid4(),

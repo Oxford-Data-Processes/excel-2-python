@@ -53,6 +53,7 @@ class SeriesDataType(Enum):
     STR = "str"
     FLOAT = "float"
     BOOL = "bool"
+    TIME = "time"
 
 
 @dataclass

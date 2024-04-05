@@ -146,7 +146,9 @@ class TableFinder:
         data = {}
         for ws in excel_file.workbook_with_values.worksheets:
             worksheet = Worksheet(
-                sheet_name=ws.title, workbook_name=excel_file.file_path, worksheet=ws
+                sheet_name=ws.title,
+                workbook_file_path=excel_file.file_path,
+                worksheet=ws,
             )
             sheet_data = {}
             for row in ws.iter_rows():
@@ -191,9 +193,9 @@ class TableFinder:
             extracted_tables[
                 Worksheet(
                     sheet_name=sheet_name,
-                    workbook_name=excel_file.file_path,
+                    workbook_file_path=excel_file.file_path,
                     worksheet=None,
                 )
             ] = worksheet_tables
 
-        return extracted_tables
+        return extracted_tables, data

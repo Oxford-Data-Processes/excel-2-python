@@ -25,6 +25,8 @@ class Cell:
     column: int
     row: int
     coordinate: str
+    value: Optional[Union[int, str, float, bool]] = None
+    value_type: Optional[str] = None
 
 
 @dataclass

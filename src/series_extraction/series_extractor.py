@@ -16,7 +16,7 @@ class SeriesExtractor:
             "series_length": f"{end_row - start_row}",
         }
         for row in range(start_row + 1, start_row + 3):
-            cell = data[sheet][f"{get_column_letter(col_index)}{row}"]
+            cell = data[sheet.sheet_name][f"{get_column_letter(col_index)}{row}"]
             series_data["row_formulas"].append(cell.get("formula"))
             series_data["row_values"].append(cell.get("value"))
 
@@ -37,10 +37,8 @@ class SeriesExtractor:
             "series_starting_cell": {"row": row_index, "column": start_column + 1},
             "series_length": f"{end_column - start_column}",
         }
-        for col_offset in range(
-            1, 3
-        ):  # Fetching data from second and third columns for rows
-            cell = data[sheet][
+        for col_offset in range(1, 3):
+            cell = data[sheet.sheet_name][
                 f"{get_column_letter(start_column + col_offset)}{row_index}"
             ]
             series_data["row_formulas"].append(cell.get("formula"))
@@ -58,12 +56,12 @@ class SeriesExtractor:
         for sheet, tables in located_tables.items():
             sheet_data = {}
             for table in tables:
-                start_column = table["range"]["start_cell"]["column"]
-                end_column = table["range"]["end_cell"]["column"]
-                start_row = table["range"]["start_cell"]["row"]
-                end_row = table["range"]["end_cell"]["row"]
-                header_location = table["header_location"]
-                header_values = table["header_values"]
+                start_column = table.range.start_cell.column
+                end_column = table.range.end_cell.column
+                start_row = table.range.start_cell.row
+                end_row = table.range.end_cell.row
+                header_location = table.header_location
+                header_values = table.header_values
 
                 if header_location == "top":
                     for col_index, header in enumerate(
@@ -83,6 +81,7 @@ class SeriesExtractor:
                 else:
                     for row_index, header in enumerate(header_values, start=start_row):
                         row_range_identifier = f"{get_column_letter(start_column + 1)}{row_index}:{get_column_letter(end_column)}{row_index}"
+
                         series_data = SeriesExtractor.build_series_data_left(
                             data,
                             sheet,

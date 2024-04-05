@@ -147,7 +147,7 @@ class TableFinder:
         for ws in excel_file.workbook_with_values.worksheets:
             worksheet = Worksheet(
                 sheet_name=ws.title,
-                workbook_file_path=excel_file.file_path,
+                workbook_file_path=None,
                 worksheet=ws,
             )
             sheet_data = {}
@@ -193,7 +193,7 @@ class TableFinder:
             extracted_tables[
                 Worksheet(
                     sheet_name=sheet_name,
-                    workbook_file_path=excel_file.file_path,
+                    workbook_file_path=None,
                     worksheet=None,
                 )
             ] = worksheet_tables

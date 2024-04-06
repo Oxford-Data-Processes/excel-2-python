@@ -357,19 +357,17 @@ classes:
           - name: sorted_dag
             type: list[UUID]
 
-  - name: PythonPipelineBuilder
+  - name: AirflowProjectBuilder
     type: regular
-    description: "Builds a Python pipeline"
+    description: "Builds an Apache Airflow project"
     methods:
-      - name: build_pipeline
+      - name: build_project
         type: static
         inputs:
-          - name: series
-            type: dict[UUID, list[Series]]
           - name: sorted_dag
             type: list[UUID]
           - name: ast_generator_collection
             type: dict[UUID, ASTGeneratorPython]
         outputs:
-          - name: python_pipeline
-            type: str
+          - name: airflow_project
+            type: dict

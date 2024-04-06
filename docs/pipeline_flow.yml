@@ -222,7 +222,7 @@ pipeline_building:
             description: "List of series_ids in order of execution",
           }
 
-  - step: PipelineBuilder.build_pipeline
+  - step: AirflowProjectBuilder.build_airflow_project
     inputs:
       - sorted_dag:
           {
@@ -234,10 +234,9 @@ pipeline_building:
             type: "dict[UUID, ASTGeneratorPython]",
             description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects",
           }
-      - series:
-          {
-            type: "dict[UUID, list[Series]]",
-            description: "Collection of series",
-          }
     outputs:
-      - python_pipeline: { type: str, description: "Python pipeline code" }
+      - airflow_project:
+          {
+            type: dict,
+            description: "An Apache Airflow project for the entire data pipeline",
+          }

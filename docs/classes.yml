@@ -241,7 +241,7 @@ classes:
             type: dict[UUID, list[Series]]
         outputs:
           - name: series_mapping
-            type: dict[Cell, Tuple[int, Series]]
+            type: dict[Worksheet, dict[Cell, Tuple[int, Series]]]
 
   - name: SeriesIterator
     type: regular

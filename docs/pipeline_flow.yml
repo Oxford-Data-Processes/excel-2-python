@@ -110,7 +110,7 @@ series_extraction:
     outputs:
       - series_mapping:
           {
-            type: "dict[Cell, Tuple[int, Series]]",
+            type: dict[Worksheet, dict[Cell, Tuple[int, Series]]],
             description: "Dictionary where Excel cell objects are mapped to Series and index",
           }
 
@@ -144,10 +144,10 @@ ast_building:
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_1, which can be traversed",
           }
-      - series_dict:
+      - series_mapping:
           {
-            type: "dict[UUID, list[Series]]",
-            description: "Collection of series",
+            type: "dict[Worksheet, dict[Cell, Tuple[int, Series]]]",
+            description: "Dictionary where Excel cell objects are mapped to Series and index",
           }
     outputs:
       - formula_1_ast_series:
@@ -163,10 +163,10 @@ ast_building:
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_2, which can be traversed",
           }
-      - series_dict:
+      - series_mapping:
           {
-            type: "dict[UUID, list[Series]]",
-            description: "Collection of series",
+            type: "dict[Worksheet, dict[Cell, Tuple[int, Series]]]",
+            description: "Dictionary where Excel cell objects are mapped to Series and index",
           }
     outputs:
       - formula_2_ast_series:

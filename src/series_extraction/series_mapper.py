@@ -32,8 +32,8 @@ class SeriesMapper:
                 sheet_name=sheet_name, workbook_file_path=None, worksheet=None
             )
             series_mapping[worksheet] = {}
-            for i, s in enumerate(series):
+            for _, s in enumerate(series):
                 cells = SeriesMapper.get_cells(s)
-                for cell in cells:
-                    series_mapping[worksheet][cell] = (i, s)
+                for index, cell in enumerate(cells):
+                    series_mapping[worksheet][cell] = (index, s)
         return series_mapping

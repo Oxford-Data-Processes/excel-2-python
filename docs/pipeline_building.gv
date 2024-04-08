@@ -5,8 +5,8 @@ digraph {
 Outputs: series_dependencies"]
 	"DAGSorter.sort_dag" [label="DAGSorter.sort_dag
 Outputs: sorted_dag"]
-	"PipelineBuilder.build_pipeline" [label="PipelineBuilder.build_pipeline
-Outputs: python_pipeline"]
+	"AirflowProjectBuilder.build_airflow_project" [label="AirflowProjectBuilder.build_airflow_project
+Outputs: airflow_project"]
 	"SeriesDependenciesBuilder.build_dependencies" -> "DAGSorter.sort_dag" [label=series_dependencies]
-	"DAGSorter.sort_dag" -> "PipelineBuilder.build_pipeline" [label=sorted_dag]
+	"DAGSorter.sort_dag" -> "AirflowProjectBuilder.build_airflow_project" [label=sorted_dag]
 }

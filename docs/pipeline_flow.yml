@@ -105,14 +105,18 @@ ast_building:
     inputs:
       - formula_1:
           { type: str, description: "First Excel formula inside a series" }
-      - formula_2:
-          { type: str, description: "Second Excel formula inside a series" }
     outputs:
       - formula_1_ast:
           {
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_1, which can be traversed",
           }
+
+  - step: FormulaParser.parse_formula
+    inputs:
+      - formula_2:
+          { type: str, description: "Second Excel formula inside a series" }
+    outputs:
       - formula_2_ast:
           {
             type: xlcalculator.ast_nodes.ASTNode,

@@ -20,7 +20,7 @@ class Worksheet:
     worksheet: Optional[openpyxl.worksheet.worksheet.Worksheet]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Cell:
     column: int
     row: int

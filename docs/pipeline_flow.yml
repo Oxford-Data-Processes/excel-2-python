@@ -83,7 +83,7 @@ series_extraction:
       - is_compatible:
           { type: bool, description: "True if the files are compatible" }
     outputs:
-      - series:
+      - series_dict:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",
@@ -91,7 +91,7 @@ series_extraction:
 
   - step: SeriesIterator.iterate_series
     inputs:
-      - series:
+      - series_dict:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",
@@ -102,7 +102,7 @@ series_extraction:
 
   - step: SeriesMapper.map_series
     inputs:
-      - series:
+      - series_dict:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",
@@ -144,7 +144,7 @@ ast_building:
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_1, which can be traversed",
           }
-      - series:
+      - series_dict:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",
@@ -163,7 +163,7 @@ ast_building:
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_2, which can be traversed",
           }
-      - series:
+      - series_dict:
           {
             type: "dict[UUID, list[Series]]",
             description: "Collection of series",

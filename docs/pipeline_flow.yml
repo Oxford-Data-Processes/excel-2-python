@@ -100,6 +100,20 @@ series_extraction:
       - series_iterator:
           { type: "Iterator[Series]", description: "Iterator over the series" }
 
+  - step: SeriesMapper.map_series
+    inputs:
+      - series:
+          {
+            type: "dict[UUID, list[Series]]",
+            description: "Collection of series",
+          }
+    outputs:
+      - series_mapping:
+          {
+            type: "dict[Cell, Tuple[int, Series]]",
+            description: "Dictionary where Excel cell objects are mapped to Series and index",
+          }
+
 ast_building:
   - step: FormulaParser.parse_formula
     inputs:
@@ -123,17 +137,17 @@ ast_building:
             description: "Represents the starting node of the AST for formula_2, which can be traversed",
           }
 
-  - step: SeriesImplementer.implement_series
+  - step: SeriesImplementer.implement_series_formula
     inputs:
       - formula_1_ast:
           {
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_1, which can be traversed",
           }
-      - formula_2_ast:
+      - series:
           {
-            type: xlcalculator.ast_nodes.ASTNode,
-            description: "Represents the starting node of the AST for formula_2, which can be traversed",
+            type: "dict[UUID, list[Series]]",
+            description: "Collection of series",
           }
     outputs:
       - formula_1_ast_series:
@@ -141,6 +155,20 @@ ast_building:
             type: xlcalculator.ast_nodes.ASTNode,
             description: "Represents the starting node of the AST for formula_1, but with SeriesRange objects instead of RangeNode objects",
           }
+
+  - step: SeriesImplementer.implement_series_formula
+    inputs:
+      - formula_2_ast:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_2, which can be traversed",
+          }
+      - series:
+          {
+            type: "dict[UUID, list[Series]]",
+            description: "Collection of series",
+          }
+    outputs:
       - formula_2_ast_series:
           {
             type: xlcalculator.ast_nodes.ASTNode,

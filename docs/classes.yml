@@ -230,6 +230,19 @@ classes:
           - name: extracted_tables
             type: dict[Worksheet, list[Table]]
 
+  - name: SeriesMapper
+    type: regular
+    description: "Maps series to their respective worksheets"
+    methods:
+      - name: map_series
+        type: static
+        inputs:
+          - name: series
+            type: dict[UUID, list[Series]]
+        outputs:
+          - name: series_mapping
+            type: dict[Cell, Tuple[int, Series]]
+
   - name: SeriesIterator
     type: regular
     description: "Creates an iterator for a collection of series"
@@ -265,6 +278,8 @@ classes:
         inputs:
           - name: formula_ast
             type: xlcalculator.ast_nodes.ASTNode
+          - name: series
+            type: dict[UUID, list[Series]]
         outputs:
           - name: formula_ast_series
             type: xlcalculator.ast_nodes.ASTNode

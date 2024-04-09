@@ -105,8 +105,12 @@ class SeriesImplementer:
                 series_mapping=series_mapping, worksheet=worksheet, cell=cell
             )
             for cell in cells_in_range
-            if cell is not None
         ]
+
+        if None in series_list:
+            raise ValueError(
+                f"Series not found for all cells in range {cell_range} on worksheet {sheet_name}"
+            )
 
         series_range = SeriesRange(
             series=[item[1] for item in series_list],
@@ -155,10 +159,9 @@ class SeriesImplementer:
     def replace_range_nodes(self, ast):
 
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
-            # Accessing series_range from the instance method directly
             series_range = self.get_series_range_from_cell_range(
-                series_mapping=self.series_mapping,  # Accessed via self
-                sheet_name=self.sheet_name,  # Assuming 'Sheet1' is intended or dynamically determined elsewhere
+                series_mapping=self.series_mapping,
+                sheet_name=self.sheet_name,
                 cell_range=ast.tvalue,
             )
             series_uuids = self.get_series_uuids_from_series_range(series_range)

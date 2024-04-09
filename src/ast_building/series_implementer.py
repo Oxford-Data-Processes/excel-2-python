@@ -4,8 +4,9 @@ from objects import Cell, Worksheet, Series, SeriesRange
 
 class SeriesImplementer:
 
-    def __init__(self, series_mapping) -> None:
+    def __init__(self, series_mapping, sheet_name) -> None:
         self.series_mapping = series_mapping
+        self.sheet_name = sheet_name
 
     @staticmethod
     def get_series_from_cell_and_sheet_name(series_mapping, worksheet, cell):
@@ -29,20 +30,41 @@ class SeriesImplementer:
         return cells
 
     @staticmethod
-    def coordinate_from_string(cell_coordinate: str):
-        """Convert Excel-style cell reference to numerical row and column indices."""
+    def get_coordinates_from_cell(cell_coordinate: str):
+
         column_str = "".join(filter(str.isalpha, cell_coordinate))
         row_str = "".join(filter(str.isdigit, cell_coordinate))
 
-        # Convert column letters to number (A=1, B=2, ..., Z=26, AA=27, ...)
         column = 0
         for char in column_str:
             column = column * 26 + (ord(char.upper()) - ord("A") + 1)
 
-        # Convert row string to number
         row = int(row_str)
 
         return (column, row)
+
+    @staticmethod
+    def get_coordinates_from_range(cell_range: str):
+        """Convert Excel-style cell range reference to numerical row and column indices."""
+
+        cell_start, cell_end = cell_range.split(":")
+
+        def check_is_column(cell_str: str):
+            return cell_str.isalpha()
+
+        if check_is_column(cell_start) and check_is_column(cell_end):
+            max_row = 1048576
+            cell_start = f"{cell_start}1"
+            cell_end = f"{cell_end}{max_row}"
+
+        cell_start_column, cell_start_row = SeriesImplementer.get_coordinates_from_cell(
+            cell_start
+        )
+        cell_end_column, cell_end_row = SeriesImplementer.get_coordinates_from_cell(
+            cell_end
+        )
+
+        return cell_start_column, cell_start_row, cell_end_column, cell_end_row
 
     @staticmethod
     def get_series_range_from_cell_range(
@@ -50,15 +72,8 @@ class SeriesImplementer:
     ) -> list[Series]:
         """cell_range is an Excel cell range as a string, eg. 'A1:B2'"""
 
-        # Get the start and end cell coordinates from the cell range
-        cell_start_coordinate, cell_end_coordinate = cell_range.split(":")
-
-        # Convert cell coordinates to row and column
-        cell_start_column, cell_start_row = SeriesImplementer.coordinate_from_string(
-            cell_start_coordinate
-        )
-        cell_end_column, cell_end_row = SeriesImplementer.coordinate_from_string(
-            cell_end_coordinate
+        cell_start_column, cell_start_row, cell_end_column, cell_end_row = (
+            SeriesImplementer.get_coordinates_from_range(cell_range)
         )
 
         cell_start = Cell(
@@ -132,11 +147,12 @@ class SeriesImplementer:
         return f'{"_".join(series_ids_unique)}_{series_range.start_index}_{series_range.end_index}'
 
     def replace_range_nodes(self, ast):
+
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
             # Accessing series_range from the instance method directly
             series_range = self.get_series_range_from_cell_range(
                 series_mapping=self.series_mapping,  # Accessed via self
-                sheet_name="Sheet1",  # Assuming 'Sheet1' is intended or dynamically determined elsewhere
+                sheet_name=self.sheet_name,  # Assuming 'Sheet1' is intended or dynamically determined elsewhere
                 cell_range=ast.tvalue,
             )
             series_uuids = self.get_series_uuids_from_series_range(

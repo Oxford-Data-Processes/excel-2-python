@@ -161,10 +161,7 @@ class SeriesImplementer:
                 sheet_name=self.sheet_name,  # Assuming 'Sheet1' is intended or dynamically determined elsewhere
                 cell_range=ast.tvalue,
             )
-            series_uuids = self.get_series_uuids_from_series_range(
-                series_range  # Accessed via self
-            )
-            # Assuming xlcalculator.tokenizer.f_token exists and works as shown
+            series_uuids = self.get_series_uuids_from_series_range(series_range)
             return xlcalculator.ast_nodes.RangeNode(
                 xlcalculator.tokenizer.f_token(
                     tvalue=series_uuids, ttype="operand", tsubtype="range"

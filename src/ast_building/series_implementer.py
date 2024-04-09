@@ -4,13 +4,18 @@ from objects import Cell, Worksheet, Series, SeriesRange
 
 class SeriesImplementer:
 
-    def __init__(self, series_mapping, sheet_name) -> None:
+    def __init__(
+        self, series_mapping: dict[Worksheet, dict[Cell, Series]], sheet_name: str
+    ) -> None:
         self.series_mapping = series_mapping
         self.sheet_name = sheet_name
 
     @staticmethod
     def get_series_from_cell_and_sheet_name(series_mapping, worksheet, cell):
-        return series_mapping[worksheet][cell]
+        try:
+            return series_mapping[worksheet][cell]
+        except KeyError:
+            return None
 
     @staticmethod
     def get_cells_between(cell_start: Cell, cell_end: Cell):
@@ -100,6 +105,7 @@ class SeriesImplementer:
                 series_mapping=series_mapping, worksheet=worksheet, cell=cell
             )
             for cell in cells_in_range
+            if cell is not None
         ]
 
         series_range = SeriesRange(

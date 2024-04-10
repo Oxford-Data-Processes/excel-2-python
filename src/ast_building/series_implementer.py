@@ -53,7 +53,7 @@ class SeriesImplementer:
     def get_coordinates_from_range(
         cell_range: str,
     ) -> Tuple[int, Optional[int], int, Optional[int], bool]:
-        """Convert Excel-style cell range reference to numerical row and column indices."""
+        """Convert Excel-style cell range reference Eg. "A1:B3" or "A1" to numerical row and column indices."""
 
         print(f"cell_range: {cell_range}")
 
@@ -182,19 +182,34 @@ class SeriesImplementer:
         series_ids_unique = list(set(series_ids))
         return f'{"_".join(series_ids_unique)}_{series_range.start_index}_{series_range.end_index}'
 
+    @staticmethod
+    def extract_cell_ranges_from_string(cell_range_string: str):
+        if ":" in cell_range_string:
+            cell_range_start, cell_range_end = cell_range_string.split(":")
+        else:
+            cell_range_start = cell_range_string
+            cell_range_end = cell_range_string
+
+        if "!" in cell_range_start:
+            _, cell_range_start = cell_range_start.split("!")
+        if "!" in cell_range_end:
+            _, cell_range_end = cell_range_end.split("!")
+
+        return f"{cell_range_start}:{cell_range_end}"
+
     def replace_range_nodes(self, ast):
 
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
 
             if "!" in ast.tvalue:
-                sheet_name, cell_range = ast.tvalue.split("!")
+                print(ast.tvalue)
+                cell_range = self.extract_cell_ranges_from_string(ast.tvalue)
             else:
                 cell_range = ast.tvalue
-                sheet_name = self.sheet_name
 
             series_range = self.get_series_range_from_cell_range(
                 series_mapping=self.series_mapping,
-                sheet_name=sheet_name,
+                sheet_name=self.sheet_name,
                 cell_range=cell_range,
             )
             series_uuids = self.get_series_uuids_from_series_range(series_range)

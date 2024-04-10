@@ -169,6 +169,13 @@ class SeriesImplementer:
 
     @staticmethod
     def get_series_uuids_from_series_range(series_range: SeriesRange):
+        if series_range.is_column_range:
+            series_ids = [
+                str(series.series_id).replace("-", "") for series in series_range.series
+            ]
+            series_ids_unique = list(set(series_ids))
+            return f'{"_".join(series_ids_unique)}'
+
         series_ids = [
             str(series.series_id).replace("-", "") for series in series_range.series
         ]
@@ -178,10 +185,17 @@ class SeriesImplementer:
     def replace_range_nodes(self, ast):
 
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
+
+            if "!" in ast.tvalue:
+                sheet_name, cell_range = ast.tvalue.split("!")
+            else:
+                cell_range = ast.tvalue
+                sheet_name = self.sheet_name
+
             series_range = self.get_series_range_from_cell_range(
                 series_mapping=self.series_mapping,
-                sheet_name=self.sheet_name,
-                cell_range=ast.tvalue,
+                sheet_name=sheet_name,
+                cell_range=cell_range,
             )
             series_uuids = self.get_series_uuids_from_series_range(series_range)
 

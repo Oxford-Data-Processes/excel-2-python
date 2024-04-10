@@ -72,5 +72,6 @@ class Series:
 @dataclass
 class SeriesRange:
     series: List[Series]
-    start_index: int
-    end_index: int
+    start_index: Optional[int]
+    end_index: Optional[int]
+    is_column_range: bool = False

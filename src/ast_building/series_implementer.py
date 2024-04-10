@@ -52,18 +52,20 @@ class SeriesImplementer:
     @staticmethod
     def get_coordinates_from_range(
         cell_range: str,
-    ) -> Tuple[int, Optional[int], int, Optional[int]]:
+    ) -> Tuple[int, Optional[int], int, Optional[int], bool]:
         """Convert Excel-style cell range reference to numerical row and column indices."""
 
         cell_start, cell_end = cell_range.split(":")
+
+        is_column_range = False
 
         def check_is_column(cell_str: str):
             return cell_str.isalpha()
 
         if check_is_column(cell_start) and check_is_column(cell_end):
-            cell_start_column = cell_start
-            cell_end_column = cell_end
-            return cell_start_column, None, cell_end_column, None
+            cell_start = cell_start + "1"
+            cell_end = cell_end + "3"
+            is_column_range = True
 
         cell_start_column, cell_start_row = SeriesImplementer.get_coordinates_from_cell(
             cell_start
@@ -72,17 +74,27 @@ class SeriesImplementer:
             cell_end
         )
 
-        return cell_start_column, cell_start_row, cell_end_column, cell_end_row
+        return (
+            cell_start_column,
+            cell_start_row,
+            cell_end_column,
+            cell_end_row,
+            is_column_range,
+        )
 
     @staticmethod
     def get_series_range_from_cell_range(
         series_mapping: dict, sheet_name: str, cell_range: str
     ) -> list[Series]:
-        """cell_range is an Excel cell range as a string, eg. 'A1:B2'"""
+        """cell_range is an Excel cell range as a string, eg. 'A1:B2' or 'A:B'"""
 
-        cell_start_column, cell_start_row, cell_end_column, cell_end_row = (
-            SeriesImplementer.get_coordinates_from_range(cell_range)
-        )
+        (
+            cell_start_column,
+            cell_start_row,
+            cell_end_column,
+            cell_end_row,
+            is_column_range,
+        ) = SeriesImplementer.get_coordinates_from_range(cell_range)
 
         cell_start = Cell(
             column=cell_start_column,
@@ -99,10 +111,8 @@ class SeriesImplementer:
             value_type=None,
         )
 
-        if cell_start_row is None:
-            series_range = SeriesRange(series=)
-
         cells_in_range = SeriesImplementer.get_cells_between(cell_start, cell_end)
+
         worksheet = Worksheet(
             sheet_name=sheet_name, workbook_file_path=None, worksheet=None
         )
@@ -117,6 +127,7 @@ class SeriesImplementer:
             series=[item[1] for item in series_list],
             start_index=series_list[0][0],
             end_index=series_list[-1][0],
+            is_column_range=is_column_range,
         )
 
         return series_range
@@ -166,30 +177,21 @@ class SeriesImplementer:
                 cell_range=ast.tvalue,
             )
             series_uuids = self.get_series_uuids_from_series_range(series_range)
+
             return xlcalculator.ast_nodes.RangeNode(
                 xlcalculator.tokenizer.f_token(
                     tvalue=series_uuids, ttype="operand", tsubtype="range"
                 )
             )
         elif isinstance(ast, xlcalculator.ast_nodes.FunctionNode):
-            modified_args = [
-                self.replace_range_nodes(arg)
-                for arg in ast.args  # Corrected to use self for instance method call
-            ]
+
+            modified_args = [self.replace_range_nodes(arg) for arg in ast.args]
             modified_function_node = xlcalculator.ast_nodes.FunctionNode(ast.token)
             modified_function_node.args = modified_args
             return modified_function_node
         elif isinstance(ast, xlcalculator.ast_nodes.OperatorNode):
-            modified_left = (
-                self.replace_range_nodes(ast.left)
-                if ast.left
-                else None  # Corrected to use self for instance method call
-            )
-            modified_right = (
-                self.replace_range_nodes(ast.right)
-                if ast.right
-                else None  # Corrected to use self for instance method call
-            )
+            modified_left = self.replace_range_nodes(ast.left) if ast.left else None
+            modified_right = self.replace_range_nodes(ast.right) if ast.right else None
             modified_operator_node = xlcalculator.ast_nodes.OperatorNode(ast.token)
             modified_operator_node.left = modified_left
             modified_operator_node.right = modified_right

@@ -19,6 +19,7 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - Tab names do not have spaces
 - No hidden tabs
 - No circular references
+- Any column references must refer to a column with only one series of data
 - Dates must be in number (general) format: Eg. 44501 or 45085.5
 - Only one series of data per column or per row, no overlapping or intersection
 

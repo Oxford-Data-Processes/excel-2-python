@@ -1,5 +1,6 @@
 import xlcalculator
 from objects import Cell, Worksheet, Series, SeriesRange
+from typing import Tuple, Optional
 
 
 class SeriesImplementer:
@@ -49,7 +50,9 @@ class SeriesImplementer:
         return (column, row)
 
     @staticmethod
-    def get_coordinates_from_range(cell_range: str):
+    def get_coordinates_from_range(
+        cell_range: str,
+    ) -> Tuple[int, Optional[int], int, Optional[int]]:
         """Convert Excel-style cell range reference to numerical row and column indices."""
 
         cell_start, cell_end = cell_range.split(":")
@@ -58,9 +61,9 @@ class SeriesImplementer:
             return cell_str.isalpha()
 
         if check_is_column(cell_start) and check_is_column(cell_end):
-            max_row = 1048576
-            cell_start = f"{cell_start}1"
-            cell_end = f"{cell_end}{max_row}"
+            cell_start_column = cell_start
+            cell_end_column = cell_end
+            return cell_start_column, None, cell_end_column, None
 
         cell_start_column, cell_start_row = SeriesImplementer.get_coordinates_from_cell(
             cell_start

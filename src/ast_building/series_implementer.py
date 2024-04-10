@@ -55,8 +55,6 @@ class SeriesImplementer:
     ) -> Tuple[int, Optional[int], int, Optional[int], bool]:
         """Convert Excel-style cell range reference Eg. "A1:B3" or "A1" to numerical row and column indices."""
 
-        print(f"cell_range: {cell_range}")
-
         if not ":" in cell_range:
             cell_range = cell_range + ":" + cell_range
 
@@ -121,8 +119,6 @@ class SeriesImplementer:
         worksheet = Worksheet(
             sheet_name=sheet_name, workbook_file_path=None, worksheet=None
         )
-        print(f"worksheet: {worksheet}")
-        print(f"cell: {cells_in_range}")
 
         series_list = [
             SeriesImplementer.get_series_from_cell_and_sheet_name(
@@ -205,7 +201,6 @@ class SeriesImplementer:
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
 
             if "!" in ast.tvalue:
-                print(ast.tvalue)
                 cell_range = self.extract_cell_ranges_from_string(ast.tvalue)
             else:
                 cell_range = ast.tvalue

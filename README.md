@@ -23,7 +23,7 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - No references to empty cells
 - There must be exactly two rows for each column with formulas
 - There must be two or more rows for each column with values
-- Any column references must refer to a column with only one series of data
+- Any column references must refer to a column with only one series of data with column header as first row
 - Dates must be in number (general) format: Eg. 44501 or 45085.5
 
 Supported functions:

@@ -99,6 +99,9 @@ class SeriesImplementer:
             value_type=None,
         )
 
+        if cell_start_row is None:
+            series_range = SeriesRange(series=)
+
         cells_in_range = SeriesImplementer.get_cells_between(cell_start, cell_end)
         worksheet = Worksheet(
             sheet_name=sheet_name, workbook_file_path=None, worksheet=None
@@ -109,11 +112,6 @@ class SeriesImplementer:
             )
             for cell in cells_in_range
         ]
-
-        if None in series_list:
-            raise ValueError(
-                f"Series not found for all cells in range {cell_range} on worksheet {sheet_name}"
-            )
 
         series_range = SeriesRange(
             series=[item[1] for item in series_list],

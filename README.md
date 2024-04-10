@@ -11,7 +11,13 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - Install ipykernel to run jupyter notebooks `pip install ipykernel`
 - For AWS CLI follow https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html ensure you use https://d-9c677c26a6.awsapps.com/start#/
 
-### Reduced Excel requirements
+### TODO:
+
+1. FormulaGenerator
+2. SeriesDependenciesBuilder
+3. DAGSorter
+
+### Requirements for reduced Excel
 
 - Each column (vertical or horizontal) must have one header (must be characters not numbers)
 - No Excel "table" objects

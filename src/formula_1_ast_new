@@ -1,8 +1,4 @@
 // AST Visualization
 digraph {
-	0 [label="+"]
-	1 [label=e173264237ed497ca06616a9bf72dd05_0_0]
-	0 -> 1
-	2 [label="9fb676a06fa9447eb35bde6f43a2ce3b_0_0"]
-	0 -> 2
+	0 [label="45bd573e70954092ba5b8430f2efb61e_0_0"]
 }

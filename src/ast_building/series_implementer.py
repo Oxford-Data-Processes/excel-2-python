@@ -121,6 +121,9 @@ class SeriesImplementer:
         worksheet = Worksheet(
             sheet_name=sheet_name, workbook_file_path=None, worksheet=None
         )
+        print(f"worksheet: {worksheet}")
+        print(f"cell: {cells_in_range}")
+
         series_list = [
             SeriesImplementer.get_series_from_cell_and_sheet_name(
                 series_mapping=series_mapping, worksheet=worksheet, cell=cell

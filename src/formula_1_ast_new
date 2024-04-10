@@ -1,12 +1,14 @@
 // AST Visualization
 digraph {
-	0 [label="+"]
-	1 [label=SUM]
+	0 [label=INDEX]
+	1 [label="7f128855c8334d8490760e5ff028554d_0_1"]
 	0 -> 1
-	2 [label="88734fa4c9ea4b8f9548108b3e7bdde5_0_1"]
-	1 -> 2
-	3 [label=SUM]
-	0 -> 3
-	4 [label="88734fa4c9ea4b8f9548108b3e7bdde5_0_1"]
-	3 -> 4
+	2 [label=MATCH]
+	0 -> 2
+	3 [label="47a7c60b0d334134bda6709121146b0b_0_0"]
+	2 -> 3
+	4 [label="47a7c60b0d334134bda6709121146b0b_0_1"]
+	2 -> 4
+	5 [label=0]
+	2 -> 5
 }

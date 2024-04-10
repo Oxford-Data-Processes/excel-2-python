@@ -55,6 +55,11 @@ class SeriesImplementer:
     ) -> Tuple[int, Optional[int], int, Optional[int], bool]:
         """Convert Excel-style cell range reference to numerical row and column indices."""
 
+        print(f"cell_range: {cell_range}")
+
+        if not ":" in cell_range:
+            cell_range = cell_range + ":" + cell_range
+
         cell_start, cell_end = cell_range.split(":")
 
         is_column_range = False
@@ -123,10 +128,12 @@ class SeriesImplementer:
             for cell in cells_in_range
         ]
 
+        filtered_series_list = [series for series in series_list if series is not None]
+
         series_range = SeriesRange(
-            series=[item[1] for item in series_list],
-            start_index=series_list[0][0],
-            end_index=series_list[-1][0],
+            series=[item[1] for item in filtered_series_list],
+            start_index=filtered_series_list[0][0],
+            end_index=filtered_series_list[-1][0],
             is_column_range=is_column_range,
         )
 

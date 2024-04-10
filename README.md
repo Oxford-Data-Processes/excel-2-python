@@ -63,3 +63,8 @@ Supported functions:
 - SUMPRODUCT
 - TEXTSPLIT
 - TRIM
+
+### Bugs
+
+- Cells that start with "'=" don't work
+- Formulas that have strings with colons Eg. =CONCATENATE(A2,":",B2) don't work

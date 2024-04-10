@@ -11,15 +11,17 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - Install ipykernel to run jupyter notebooks `pip install ipykernel`
 - For AWS CLI follow https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html ensure you use https://d-9c677c26a6.awsapps.com/start#/
 
-### Excel requirements
+### Reduced Excel requirements
 
-- Each column (vertical or horizontal) must have one or two headers (must be characters not numbers)
+- Each column (vertical or horizontal) must have one header (must be characters not numbers)
 - No Excel "table" objects
 - No pivot tables
 - Tab names do not have spaces
 - No hidden tabs
 - No circular references
 - No cell references to column headers in formulas
+- No references to empty cells
+- There must be exactly two rows for each column
 - Any column references must refer to a column with only one series of data
 - Dates must be in number (general) format: Eg. 44501 or 45085.5
 

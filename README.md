@@ -21,7 +21,8 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - No circular references
 - No cell references to column headers in formulas
 - No references to empty cells
-- There must be exactly two rows for each column
+- There must be exactly two rows for each column with formulas
+- There must be two or more rows for each column with values
 - Any column references must refer to a column with only one series of data
 - Dates must be in number (general) format: Eg. 44501 or 45085.5
 

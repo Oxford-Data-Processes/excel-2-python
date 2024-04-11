@@ -167,21 +167,30 @@ class SeriesImplementer:
             return str(ast.tvalue)
 
     @staticmethod
-    def get_series_ids_from_series_range(
-        series_range: SeriesRange,
-    ) -> str:
-        if series_range.is_column_range:
-            series_ids = [
-                str(series.series_id).replace("-", "") for series in series_range.series
-            ]
-            series_ids_unique = tuple(set(series_ids))
-            return str(series_ids_unique)
-
+    def get_series_ids_from_series_range(series_range: SeriesRange) -> str:
         series_ids = [
             str(series.series_id).replace("-", "") for series in series_range.series
         ]
-        series_ids_unique = tuple(set(series_ids))
-        return f"{str(series_ids_unique)}_{str(tuple([series_range.start_index,series_range.end_index]))}"
+        series_ids_unique = list(set(series_ids))
+
+        # sort series ids by column (second last index), then row (last index): Eg. ('Sheet1|col_2|2|2', 'Sheet1|col_1|2|1', 'Sheet1|col_3|4|2') ==> ('Sheet1|col_2|2|1', 'Sheet1|col_1|2|2', 'Sheet1|col_3|4|2')
+        series_ids_sorted = tuple(
+            sorted(
+                series_ids_unique, key=lambda x: (x.split("|")[-3], x.split("|")[-1])
+            )
+        )
+
+        if series_range.is_column_range:
+            return str(tuple(series_ids_sorted))
+
+        return str(
+            tuple(
+                [
+                    series_ids_sorted,
+                    tuple([series_range.start_index, series_range.end_index]),
+                ]
+            )
+        )
 
     @staticmethod
     def extract_cell_ranges_from_string(cell_range_string: str):

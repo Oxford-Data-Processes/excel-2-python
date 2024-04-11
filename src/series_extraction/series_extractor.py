@@ -127,15 +127,15 @@ class SeriesExtractor:
                 series_starting_cell_row = series_data["series_starting_cell"]["row"]
 
                 if series_data["header_location"] == "top":
-                    header_cell_column = series_starting_cell_column
                     header_cell_row = series_starting_cell_row - 1
+                    header_cell_column = series_starting_cell_column
                 elif series_data["header_location"] == "left":
-                    header_cell_column = series_starting_cell_column - 1
                     header_cell_row = series_starting_cell_row
+                    header_cell_column = series_starting_cell_column - 1
 
                 series[worksheet.sheet_name].append(
                     Series(
-                        series_id=f"{worksheet.sheet_name}|{series_data['series_header']}|{header_cell_column}|{header_cell_row}",
+                        series_id=f"{worksheet.sheet_name}|{series_data['series_header']}|{header_cell_row}|{header_cell_column}",
                         worksheet=worksheet,
                         series_header=series_data["series_header"],
                         formulas=series_data["row_formulas"],

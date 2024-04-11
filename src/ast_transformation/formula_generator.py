@@ -14,8 +14,6 @@ class ASTGenerator:
     @staticmethod
     def get_delta_between_nodes(node1_value: str, node2_value: str):
 
-        print(node1_value, node2_value)
-
         def extract_tuples(node_value: str):
             return ast.literal_eval(node_value)
 
@@ -28,11 +26,11 @@ class ASTGenerator:
         end_row_index_delta = node2_end_row_index - node1_end_row_index
 
         # Extract the column indexes from the series ids
-        node1_start_column_index = int(node1_series_ids[0].split("|")[-2])
-        node1_end_column_index = int(node1_series_ids[-1].split("|")[-2])
+        node1_start_column_index = int(node1_series_ids[0].split("|")[-1])
+        node1_end_column_index = int(node1_series_ids[-1].split("|")[-1])
 
-        node2_start_column_index = int(node2_series_ids[0].split("|")[-2])
-        node2_end_column_index = int(node2_series_ids[-1].split("|")[-2])
+        node2_start_column_index = int(node2_series_ids[0].split("|")[-1])
+        node2_end_column_index = int(node2_series_ids[-1].split("|")[-1])
 
         start_column_index_delta = node2_start_column_index - node1_start_column_index
         end_column_index_delta = node2_end_column_index - node1_end_column_index
@@ -42,7 +40,7 @@ class ASTGenerator:
             end_row_index_delta,
             start_column_index_delta,
             end_column_index_delta,
-        )
+        ), node1_start_row_index
 
     def apply_deltas_to_range_nodes(
         self,
@@ -59,7 +57,7 @@ class ASTGenerator:
                     end_row_index_delta,
                     start_column_index_delta,
                     end_column_index_delta,
-                ) = deltas
+                ), start_index = deltas
 
                 series_ids = ast.literal_eval(node1.tvalue)[0]
                 new_tvalue = str(
@@ -72,6 +70,7 @@ class ASTGenerator:
                                 start_column_index_delta,
                                 end_column_index_delta,
                             ),
+                            start_index,
                         ]
                     )
                 )

@@ -299,6 +299,21 @@ classes:
           - name: ast_generator
             type: ASTGenerator
 
+  - name: FormulaChecker
+    type: regular
+    description: "Checks formulas are correct by rebuilding Excel and checking equivalence"
+    methods:
+      - name: check_formulas
+        type: static
+        inputs:
+          - name: ast_generator
+            type: ASTGenerator
+          - name: series_mapping
+            type: xlcalculator.ast_nodes.ASTNode
+        outputs:
+          - name: formulas_are_correct
+            type: bool
+
   - name: FunctionReplacer
     type: regular
     description: "Replaces FunctionNode objects with PythonFunction objects in an AST"

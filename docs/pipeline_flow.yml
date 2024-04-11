@@ -195,6 +195,29 @@ ast_transformation:
             description: "An object with a get_ast() method that returns the ast of the nth index",
           }
 
+  - step: FormulaChecker.check_formulas
+    inputs:
+      - ast_generator:
+          {
+            type: ASTGenerator,
+            description: "An object with a get_ast() method that returns the ast of the nth index",
+          }
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_1, but with SeriesRange objects instead of RangeNode objects",
+          }
+      - formula_2_ast_series:
+          {
+            type: xlcalculator.ast_nodes.ASTNode,
+            description: "Represents the starting node of the AST for formula_2, but with SeriesRange objects instead of RangeNode objects",
+          }
+    outputs:
+      - ast_generator:
+          {
+            type: ASTGenerator,
+            description: "An object with a get_ast() method that returns the ast of the nth index",
+          }
+
   - step: FunctionReplacer.replace_functions
     inputs:
       - ast_generator:

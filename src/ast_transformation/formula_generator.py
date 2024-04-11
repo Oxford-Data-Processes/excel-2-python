@@ -25,18 +25,40 @@ class ASTGenerator:
             return None
         else:
 
-            _, node1_row_indexes = node1_tuple
+            node1_series_ids, node1_row_indexes = node1_tuple
             node1_start_row_index, node1_end_row_index = node1_row_indexes
-            _, node2_row_indexes = node2_tuple
+
+            print("node1_series_id_0")
+            print(node1_series_ids[0])
+
+            node1_start_column_index = int(node1_series_ids[0].split("|")[-1])
+            node1_end_column_index = int(node1_series_ids[-1].split("|")[-1])
+
+            print(f"node1_start_column_index: {node1_start_column_index}")
+
+            node2_series_ids, node2_row_indexes = node2_tuple
             node2_start_row_index, node2_end_row_index = node2_row_indexes
 
-        start_row_index_delta = node2_start_row_index - node1_start_row_index
-        end_row_index_delta = node2_end_row_index - node1_end_row_index
+            print("node2_series_id_0")
+            print(node2_series_ids[0])
 
-        return (
-            start_row_index_delta,
-            end_row_index_delta,
-        ), (node1_start_row_index, node1_end_row_index)
+            node2_start_column_index = int(node2_series_ids[0].split("|")[-1])
+            node2_end_column_index = int(node2_series_ids[-1].split("|")[-1])
+
+            start_row_index_delta = node2_start_row_index - node1_start_row_index
+            end_row_index_delta = node2_end_row_index - node1_end_row_index
+
+            start_column_index_delta = (
+                node2_start_column_index - node1_start_column_index
+            )
+            end_column_index_delta = node2_end_column_index - node1_end_column_index
+
+            return (
+                start_row_index_delta,
+                end_row_index_delta,
+                start_column_index_delta,
+                end_column_index_delta,
+            ), (node1_start_row_index, node1_end_row_index)
 
     def apply_delta_to_range_node(
         self,
@@ -52,15 +74,31 @@ class ASTGenerator:
             )
             if deltas_and_indexes:
                 deltas, starting_indexes = deltas_and_indexes
-                (start_row_index_delta, end_row_index_delta) = deltas
+                (
+                    start_row_index_delta,
+                    end_row_index_delta,
+                    start_column_index_delta,
+                    end_column_index_delta,
+                ) = deltas
                 (start_row_index, end_row_index) = starting_indexes
 
                 series_ids = ast.literal_eval(node1.tvalue)[0]
+
+                def add_column_delta_to_series_id(series_id: str, column_delta: int):
+                    series_id_parts = series_id.split("|")
+                    series_id_parts[-1] = str(int(series_id_parts[-1]) + column_delta)
+                    return "|".join(series_id_parts)
+
                 new_tvalue = str(
                     (
                         tuple(
                             [
-                                series_ids,
+                                [
+                                    add_column_delta_to_series_id(
+                                        series_id, start_column_index_delta * (n - 1)
+                                    )
+                                    for series_id in series_ids
+                                ],
                                 (
                                     (start_row_index + start_row_index_delta * (n - 1)),
                                     (end_row_index + end_row_index_delta * (n - 1)),

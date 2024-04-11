@@ -1,5 +1,5 @@
 import xlcalculator
-import re
+import ast
 
 
 class ASTGenerator:
@@ -13,30 +13,36 @@ class ASTGenerator:
 
     @staticmethod
     def get_delta_between_nodes(node1_value: str, node2_value: str):
-        def check_string(s):
-            pattern = r"_\d_\d$"
-            return bool(re.search(pattern, s))
 
         print(node1_value, node2_value)
 
-        if node1_value == node2_value:
-            return None
-        elif (
-            check_string(node1_value)
-            and check_string(node2_value)
-            and node1_value[:-4] == node2_value[:-4]
-        ):
-            node_1_start_index = int(node1_value[-3])
-            node_1_end_index = int(node1_value[-1])
-            node_2_start_index = int(node2_value[-3])
-            node_2_end_index = int(node2_value[-1])
-            if (
-                node_1_start_index != node_2_start_index
-                or node_1_end_index != node_2_end_index
-            ):
-                start_index_delta = node_2_start_index - node_1_start_index
-                end_index_delta = node_2_end_index - node_1_end_index
-                return (start_index_delta, end_index_delta)
+        def extract_tuples(node_value: str):
+            return ast.literal_eval(node_value)
+
+        node1_series_ids, node1_row_indexes = extract_tuples(node1_value)
+        node1_start_row_index, node1_end_row_index = node1_row_indexes
+        node2_series_ids, node2_row_indexes = extract_tuples(node2_value)
+        node2_start_row_index, node2_end_row_index = node2_row_indexes
+
+        start_row_index_delta = node2_start_row_index - node1_start_row_index
+        end_row_index_delta = node2_end_row_index - node1_end_row_index
+
+        # Extract the column indexes from the series ids
+        node1_start_column_index = int(node1_series_ids[0].split("|")[-2])
+        node1_end_column_index = int(node1_series_ids[-1].split("|")[-2])
+
+        node2_start_column_index = int(node2_series_ids[0].split("|")[-2])
+        node2_end_column_index = int(node2_series_ids[-1].split("|")[-2])
+
+        start_column_index_delta = node2_start_column_index - node1_start_column_index
+        end_column_index_delta = node2_end_column_index - node1_end_column_index
+
+        return (
+            start_row_index_delta,
+            end_row_index_delta,
+            start_column_index_delta,
+            end_column_index_delta,
+        )
 
     def apply_deltas_to_range_nodes(
         self,
@@ -48,8 +54,14 @@ class ASTGenerator:
         ):
             deltas = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
             if deltas:
-                start_index_delta, end_index_delta = deltas
-                new_tvalue = f"{node1.tvalue[:-4]}_{start_index_delta}_{end_index_delta}_{node1.tvalue[-3]}"
+                (
+                    start_row_index_delta,
+                    end_row_index_delta,
+                    start_column_index_delta,
+                    end_column_index_delta,
+                ) = deltas
+                new_tvalue = f"{start_row_index_delta}:{end_row_index_delta},{start_column_index_delta}:{end_column_index_delta}"
+
                 return xlcalculator.ast_nodes.RangeNode(
                     xlcalculator.tokenizer.f_token(
                         tvalue=new_tvalue, ttype="operand", tsubtype="range"

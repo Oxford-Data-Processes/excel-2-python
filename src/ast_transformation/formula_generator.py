@@ -47,10 +47,11 @@ class ASTGenerator:
         if isinstance(node1, xlcalculator.ast_nodes.RangeNode) and isinstance(
             node2, xlcalculator.ast_nodes.RangeNode
         ):
-            deltas, starting_indexes = self.get_delta_between_nodes(
+            deltas_and_indexes = self.get_delta_between_nodes(
                 node1.tvalue, node2.tvalue
             )
-            if deltas:
+            if deltas_and_indexes:
+                deltas, starting_indexes = deltas_and_indexes
                 (start_row_index_delta, end_row_index_delta) = deltas
                 (start_row_index, end_row_index) = starting_indexes
 
@@ -61,8 +62,8 @@ class ASTGenerator:
                             [
                                 series_ids,
                                 (
-                                    start_row_index + start_row_index_delta * (n - 1),
-                                    end_row_index + end_row_index_delta * (n - 1),
+                                    (start_row_index + start_row_index_delta * (n - 1)),
+                                    (end_row_index + end_row_index_delta * (n - 1)),
                                 ),
                             ]
                         )

@@ -66,11 +66,8 @@ Supported functions:
 - SUBSTITUTE
 - DATE
 - DAY
-- FILTER
 - ROUNDDOWN
 - ROUNDUP
-- SORT
-- SUMPRODUCT
 - TEXTSPLIT
 - TRIM
 

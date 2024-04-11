@@ -17,6 +17,8 @@ class ASTGenerator:
             pattern = r"_\d_\d$"
             return bool(re.search(pattern, s))
 
+        print(node1_value, node2_value)
+
         if node1_value == node2_value:
             return None
         elif (

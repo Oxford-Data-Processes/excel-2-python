@@ -81,7 +81,7 @@ classes:
     description: "Represents a series"
     attributes:
       - name: series_id
-        type: UUID
+        type: str
       - name: worksheet
         type: Worksheet
       - name: series_header
@@ -133,7 +133,7 @@ classes:
     description: "An object with a get_ast_python() method but where the ast outputs has PythonFunction objects instead of FunctionNode objects."
     attributes:
       - name: series_id
-        type: UUID
+        type: str
     methods:
       - name: get_ast_python
         type: instance
@@ -202,7 +202,7 @@ classes:
             type: dict[Worksheet, list[Table]]
         outputs:
           - name: series_dict
-            type: dict[UUID, list[Series]]
+            type: dict[str, list[Series]]
 
   - name: ExcelCleaner
     type: regular
@@ -238,7 +238,7 @@ classes:
         type: static
         inputs:
           - name: series_dict
-            type: dict[UUID, list[Series]]
+            type: dict[str, list[Series]]
         outputs:
           - name: series_mapping
             type: dict[Worksheet, dict[Cell, Tuple[int, Series]]]
@@ -251,7 +251,7 @@ classes:
         type: static
         inputs:
           - name: series_dict
-            type: dict[UUID, list[Series]]
+            type: dict[str, list[Series]]
         outputs:
           - name: series_iterator
             type: Iterator[Series]
@@ -279,7 +279,7 @@ classes:
           - name: formula_ast
             type: xlcalculator.ast_nodes.ASTNode
           - name: series_dict
-            type: dict[UUID, list[Series]]
+            type: dict[str, list[Series]]
         outputs:
           - name: formula_ast_series
             type: xlcalculator.ast_nodes.ASTNode
@@ -301,7 +301,7 @@ classes:
 
   - name: FormulaChecker
     type: regular
-    description: "Checks formulas are correct by rebuilding Excel and checking equivalence"
+    description: "Checks formulas are correct by rebuilding Excel and checking equivalence, also checks that functions are in allowed list"
     methods:
       - name: check_formulas
         type: static
@@ -353,13 +353,13 @@ classes:
             type: ASTGeneratorPython
         outputs:
           - name: ast_generator_collection
-            type: dict[UUID, ASTGeneratorPython]
+            type: dict[str, ASTGeneratorPython]
       - name: get_collection
         type: instance
         inputs: []
         outputs:
           - name: ast_generator_collection
-            type: dict[UUID, ASTGeneratorPython]
+            type: dict[str, ASTGeneratorPython]
 
   - name: SeriesDependenciesBuilder
     type: regular
@@ -369,10 +369,10 @@ classes:
         type: static
         inputs:
           - name: formula_1_ast_series_list
-            type: list[(UUID, xlcalculator.ast_nodes.ASTNode)]
+            type: list[(str, xlcalculator.ast_nodes.ASTNode)]
         outputs:
           - name: series_dependencies
-            type: dict[UUID, list[UUID]]
+            type: dict[str, list[str]]
 
   - name: DAGSorter
     type: regular
@@ -382,10 +382,10 @@ classes:
         type: static
         inputs:
           - name: series_dependencies
-            type: dict[UUID, list[UUID]]
+            type: dict[str, list[str]]
         outputs:
           - name: sorted_dag
-            type: list[UUID]
+            type: list[str]
 
   - name: AirflowProjectBuilder
     type: regular
@@ -395,9 +395,9 @@ classes:
         type: static
         inputs:
           - name: sorted_dag
-            type: list[UUID]
+            type: list[str]
           - name: ast_generator_collection
-            type: dict[UUID, ASTGeneratorPython]
+            type: dict[str, ASTGeneratorPython]
         outputs:
           - name: airflow_project
             type: dict

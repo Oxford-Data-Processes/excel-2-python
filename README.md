@@ -19,10 +19,10 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 
 ### Requirements for reduced Excel
 
-- Each column (vertical or horizontal) must have one header (must be characters not numbers)
+- Each column (vertical or horizontal) must have one header (must be characters and no spaces or pipes)
 - No Excel "table" objects
 - No pivot tables
-- Tab names do not have spaces
+- Sheet names do not have spaces or pipes
 - No hidden tabs
 - No circular references
 - No cell references to column headers in formulas

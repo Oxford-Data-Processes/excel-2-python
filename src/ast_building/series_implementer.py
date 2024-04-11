@@ -167,19 +167,21 @@ class SeriesImplementer:
             return str(ast.tvalue)
 
     @staticmethod
-    def get_series_uuids_from_series_range(series_range: SeriesRange):
+    def get_series_ids_from_series_range(
+        series_range: SeriesRange,
+    ) -> str:
         if series_range.is_column_range:
             series_ids = [
                 str(series.series_id).replace("-", "") for series in series_range.series
             ]
-            series_ids_unique = list(set(series_ids))
-            return f'{"_".join(series_ids_unique)}'
+            series_ids_unique = tuple(set(series_ids))
+            return str(series_ids_unique)
 
         series_ids = [
             str(series.series_id).replace("-", "") for series in series_range.series
         ]
-        series_ids_unique = list(set(series_ids))
-        return f'{"_".join(series_ids_unique)}_{series_range.start_index}_{series_range.end_index}'
+        series_ids_unique = tuple(set(series_ids))
+        return f"{str(series_ids_unique)}_{str(tuple([series_range.start_index,series_range.end_index]))}"
 
     @staticmethod
     def extract_cell_ranges_from_string(cell_range_string: str):
@@ -210,11 +212,11 @@ class SeriesImplementer:
                 sheet_name=self.sheet_name,
                 cell_range=cell_range,
             )
-            series_uuids = self.get_series_uuids_from_series_range(series_range)
+            series_ids = self.get_series_ids_from_series_range(series_range)
 
             return xlcalculator.ast_nodes.RangeNode(
                 xlcalculator.tokenizer.f_token(
-                    tvalue=series_uuids, ttype="operand", tsubtype="range"
+                    tvalue=series_ids, ttype="operand", tsubtype="range"
                 )
             )
         elif isinstance(ast, xlcalculator.ast_nodes.FunctionNode):

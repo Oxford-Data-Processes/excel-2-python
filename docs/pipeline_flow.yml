@@ -85,7 +85,7 @@ series_extraction:
     outputs:
       - series_dict:
           {
-            type: "dict[UUID, list[Series]]",
+            type: "dict[str, list[Series]]",
             description: "Collection of series",
           }
 
@@ -93,7 +93,7 @@ series_extraction:
     inputs:
       - series_dict:
           {
-            type: "dict[UUID, list[Series]]",
+            type: "dict[str, list[Series]]",
             description: "Collection of series",
           }
     outputs:
@@ -104,7 +104,7 @@ series_extraction:
     inputs:
       - series_dict:
           {
-            type: "dict[UUID, list[Series]]",
+            type: "dict[str, list[Series]]",
             description: "Collection of series",
           }
     outputs:
@@ -244,7 +244,7 @@ ast_transformation:
     outputs:
       - ast_generator_collection:
           {
-            type: "dict[UUID, ASTGeneratorPython]",
+            type: "dict[str, ASTGeneratorPython]",
             description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects",
           }
 
@@ -259,7 +259,7 @@ pipeline_building:
     outputs:
       - series_dependencies:
           {
-            type: "dict[UUID, list[UUID]]",
+            type: "dict[str, list[str]]",
             description: "Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series",
           }
 
@@ -267,13 +267,13 @@ pipeline_building:
     inputs:
       - series_dependencies:
           {
-            type: "dict[UUID, list[UUID]]",
+            type: "dict[str, list[str]]",
             description: "Dictionary where keys are series_ids and the values are the series_ids which are dependencies for each series",
           }
     outputs:
       - sorted_dag:
           {
-            type: "list[UUID]",
+            type: "list[str]",
             description: "List of series_ids in order of execution",
           }
 
@@ -281,12 +281,12 @@ pipeline_building:
     inputs:
       - sorted_dag:
           {
-            type: "list[UUID]",
+            type: "list[str]",
             description: "List of series_ids in order of execution",
           }
       - ast_generator_collection:
           {
-            type: "dict[UUID, ASTGeneratorPython]",
+            type: "dict[str, ASTGeneratorPython]",
             description: "Dictionary where keys are series_id values and the values are ASTGeneratorPython objects",
           }
     outputs:

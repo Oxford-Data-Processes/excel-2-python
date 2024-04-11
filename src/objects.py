@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional, List, Union
-from uuid import UUID
 from enum import Enum
 
 import openpyxl
@@ -58,7 +57,7 @@ class SeriesDataType(Enum):
 
 @dataclass
 class Series:
-    series_id: UUID
+    series_id: str
     worksheet: Worksheet
     series_header: str
     formulas: List[str]

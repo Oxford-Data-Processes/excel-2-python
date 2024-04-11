@@ -11,8 +11,6 @@ from objects import (
 
 from typing import Dict, List
 
-from uuid import UUID, uuid4
-
 
 class SeriesExtractor:
 
@@ -114,7 +112,7 @@ class SeriesExtractor:
     def extract_series(
         extracted_tables: Dict[Worksheet, List[Table]],
         data: dict,
-    ) -> Dict[UUID, List[Series]]:
+    ) -> Dict[str, List[Series]]:
         series_data = SeriesExtractor.extract_table_details(extracted_tables, data)
 
         series = {}
@@ -122,17 +120,30 @@ class SeriesExtractor:
         for worksheet, table_data in series_data.items():
             series[worksheet.sheet_name] = []
             for _, series_data in table_data.items():
+
+                series_starting_cell_column = series_data["series_starting_cell"][
+                    "column"
+                ]
+                series_starting_cell_row = series_data["series_starting_cell"]["row"]
+
+                if series_data["header_location"] == "top":
+                    header_cell_column = series_starting_cell_column
+                    header_cell_row = series_starting_cell_row - 1
+                elif series_data["header_location"] == "left":
+                    header_cell_column = series_starting_cell_column - 1
+                    header_cell_row = series_starting_cell_row
+
                 series[worksheet.sheet_name].append(
                     Series(
-                        series_id=uuid4(),
+                        series_id=f"{worksheet.sheet_name}|{series_data['series_header']}|{header_cell_column}|{header_cell_row}",
                         worksheet=worksheet,
                         series_header=series_data["series_header"],
                         formulas=series_data["row_formulas"],
                         values=series_data["row_values"],
                         header_location=HeaderLocation(series_data["header_location"]),
                         series_starting_cell=Cell(
-                            column=series_data["series_starting_cell"]["column"],
-                            row=series_data["series_starting_cell"]["row"],
+                            column=series_starting_cell_column,
+                            row=series_starting_cell_row,
                             coordinate=f"{get_column_letter(series_data['series_starting_cell']['column'])}{series_data['series_starting_cell']['row']}",
                         ),
                         series_length=int(series_data["series_length"]),

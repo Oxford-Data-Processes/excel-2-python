@@ -1,5 +1,4 @@
 from typing import List, Tuple
-from uuid import UUID
 
 from objects import Cell, Series, Worksheet
 
@@ -28,7 +27,7 @@ class SeriesMapper:
 
     @staticmethod
     def map_series(
-        series_dict: dict[UUID, Series]
+        series_dict: dict[str, Series]
     ) -> dict[Worksheet, dict[Cell, Tuple[int, Series]]]:
         """Get mapping from Cell to row index and Series"""
         series_mapping = {}

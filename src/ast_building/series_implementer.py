@@ -139,34 +139,6 @@ class SeriesImplementer:
         return series_range
 
     @staticmethod
-    def serialise_ast_to_formula(ast):
-        if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
-            value = ast.tvalue.strip("[]")
-            return f"{value}"
-        elif isinstance(ast, xlcalculator.ast_nodes.FunctionNode):
-            args = ", ".join(
-                SeriesImplementer.serialise_ast_to_formula(arg) for arg in ast.args
-            )
-            return f"{ast.tvalue}({args})"
-        elif isinstance(ast, xlcalculator.ast_nodes.OperatorNode):
-            left = (
-                SeriesImplementer.serialise_ast_to_formula(ast.left) if ast.left else ""
-            )
-            right = (
-                SeriesImplementer.serialise_ast_to_formula(ast.right)
-                if ast.right
-                else ""
-            )
-            return f"({left} {ast.tvalue} {right})".strip()
-        elif (
-            isinstance(ast, xlcalculator.ast_nodes.OperandNode)
-            and ast.tsubtype == "text"
-        ):
-            return f'"{ast.tvalue}"'
-        else:
-            return str(ast.tvalue)
-
-    @staticmethod
     def get_series_ids_from_series_range(series_range: SeriesRange) -> str:
         series_ids = [
             str(series.series_id).replace("-", "") for series in series_range.series

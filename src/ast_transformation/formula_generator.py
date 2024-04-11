@@ -1,5 +1,6 @@
 import xlcalculator
 import ast
+import copy
 
 
 class ASTGenerator:
@@ -10,6 +11,7 @@ class ASTGenerator:
     ):
         self.formula_1_ast_series = formula_1_ast_series
         self.formula_2_ast_series = formula_2_ast_series
+        self.ast_delta = self.get_ast_with_deltas()
 
     @staticmethod
     def get_delta_between_nodes(node1_value: str, node2_value: str):
@@ -24,36 +26,20 @@ class ASTGenerator:
             return None
         else:
 
-            print("node and length")
-            print(node1_tuple)
-            print(len(node1_tuple))
-
-            node1_series_ids, node1_row_indexes = node1_tuple
+            _, node1_row_indexes = node1_tuple
             node1_start_row_index, node1_end_row_index = node1_row_indexes
-            node2_series_ids, node2_row_indexes = node2_tuple
+            _, node2_row_indexes = node2_tuple
             node2_start_row_index, node2_end_row_index = node2_row_indexes
 
         start_row_index_delta = node2_start_row_index - node1_start_row_index
         end_row_index_delta = node2_end_row_index - node1_end_row_index
 
-        # Extract the column indexes from the series ids
-        node1_start_column_index = int(node1_series_ids[0].split("|")[-1])
-        node1_end_column_index = int(node1_series_ids[-1].split("|")[-1])
-
-        node2_start_column_index = int(node2_series_ids[0].split("|")[-1])
-        node2_end_column_index = int(node2_series_ids[-1].split("|")[-1])
-
-        start_column_index_delta = node2_start_column_index - node1_start_column_index
-        end_column_index_delta = node2_end_column_index - node1_end_column_index
-
         return (
             start_row_index_delta,
             end_row_index_delta,
-            start_column_index_delta,
-            end_column_index_delta,
-        ), node1_start_row_index
+        )
 
-    def apply_deltas_to_range_nodes(
+    def substitute_range_nodes_with_deltas(
         self,
         node1: xlcalculator.ast_nodes.ASTNode,
         node2: xlcalculator.ast_nodes.ASTNode,
@@ -63,26 +49,20 @@ class ASTGenerator:
         ):
             deltas = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
             if deltas:
-                (
-                    start_row_index_delta,
-                    end_row_index_delta,
-                    start_column_index_delta,
-                    end_column_index_delta,
-                ), start_index = deltas
+                (start_row_index_delta, end_row_index_delta) = deltas
 
                 series_ids = ast.literal_eval(node1.tvalue)[0]
                 new_tvalue = str(
                     (
-                        [
-                            series_ids,
-                            (
-                                start_row_index_delta,
-                                end_row_index_delta,
-                                start_column_index_delta,
-                                end_column_index_delta,
-                            ),
-                            start_index,
-                        ]
+                        tuple(
+                            [
+                                series_ids,
+                                (
+                                    start_row_index_delta,
+                                    end_row_index_delta,
+                                ),
+                            ]
+                        )
                     )
                 )
 
@@ -98,7 +78,7 @@ class ASTGenerator:
             node1, xlcalculator.ast_nodes.FunctionNode
         ):
             modified_args = [
-                self.apply_deltas_to_range_nodes(arg, node2.args[i])
+                self.substitute_range_nodes_with_deltas(arg, node2.args[i])
                 for i, arg in enumerate(node1.args)
             ]
             modified_node = xlcalculator.ast_nodes.FunctionNode(node1.token)
@@ -109,12 +89,12 @@ class ASTGenerator:
             node1, xlcalculator.ast_nodes.OperatorNode
         ):
             modified_left = (
-                self.apply_deltas_to_range_nodes(node1.left, node2.left)
+                self.substitute_range_nodes_with_deltas(node1.left, node2.left)
                 if node1.left
                 else None
             )
             modified_right = (
-                self.apply_deltas_to_range_nodes(node1.right, node2.right)
+                self.substitute_range_nodes_with_deltas(node1.right, node2.right)
                 if node1.right
                 else None
             )
@@ -127,9 +107,17 @@ class ASTGenerator:
             return node1
 
     def get_ast_with_deltas(self) -> xlcalculator.ast_nodes.ASTNode:
-        return self.apply_deltas_to_range_nodes(
+        return self.substitute_range_nodes_with_deltas(
             self.formula_1_ast_series, self.formula_2_ast_series
         )
+    
+    @staticmethod
+    def apply_delta_to_range_node(node: xlcalculator.ast_nodes.RangeNode, delta: xlcalculator.ast_nodes.RangeNode):
+        
+
+    def get_nth_formula(self, n: int) -> xlcalculator.ast_nodes.ASTNode:
+        scale_factor = n - 1
+        cloned_ast = copy.deepcopy(self.formula_1_ast_series)
 
 
 class FormulaGenerator:

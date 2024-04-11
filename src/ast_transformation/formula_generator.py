@@ -28,19 +28,11 @@ class ASTGenerator:
             node1_series_ids, node1_row_indexes = node1_tuple
             node1_start_row_index, node1_end_row_index = node1_row_indexes
 
-            print("node1_series_id_0")
-            print(node1_series_ids[0])
-
             node1_start_column_index = int(node1_series_ids[0].split("|")[-1])
             node1_end_column_index = int(node1_series_ids[-1].split("|")[-1])
 
-            print(f"node1_start_column_index: {node1_start_column_index}")
-
             node2_series_ids, node2_row_indexes = node2_tuple
             node2_start_row_index, node2_end_row_index = node2_row_indexes
-
-            print("node2_series_id_0")
-            print(node2_series_ids[0])
 
             node2_start_column_index = int(node2_series_ids[0].split("|")[-1])
             node2_end_column_index = int(node2_series_ids[-1].split("|")[-1])
@@ -93,12 +85,15 @@ class ASTGenerator:
                     (
                         tuple(
                             [
-                                [
-                                    add_column_delta_to_series_id(
-                                        series_id, start_column_index_delta * (n - 1)
-                                    )
-                                    for series_id in series_ids
-                                ],
+                                tuple(
+                                    [
+                                        add_column_delta_to_series_id(
+                                            series_id,
+                                            start_column_index_delta * (n - 1),
+                                        )
+                                        for series_id in series_ids
+                                    ]
+                                ),
                                 (
                                     (start_row_index + start_row_index_delta * (n - 1)),
                                     (end_row_index + end_row_index_delta * (n - 1)),

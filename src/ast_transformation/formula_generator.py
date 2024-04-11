@@ -2,15 +2,20 @@ import xlcalculator
 import ast
 import copy
 
+from typing import List
+from objects import Series
+
 
 class ASTGenerator:
     def __init__(
         self,
         formula_1_ast_series: xlcalculator.ast_nodes.ASTNode,
         formula_2_ast_series: xlcalculator.ast_nodes.ASTNode,
+        series_list: List[Series],
     ):
         self.formula_1_ast_series = formula_1_ast_series
         self.formula_2_ast_series = formula_2_ast_series
+        self.series_list = series_list
 
     @staticmethod
     def get_delta_between_nodes(node1_value: str, node2_value: str):
@@ -76,10 +81,28 @@ class ASTGenerator:
 
                 series_ids = ast.literal_eval(node1.tvalue)[0]
 
-                def add_column_delta_to_series_id(series_id: str, column_delta: int):
-                    series_id_parts = series_id.split("|")
-                    series_id_parts[-1] = str(int(series_id_parts[-1]) + column_delta)
-                    return "|".join(series_id_parts)
+                def add_column_delta_to_series_id(
+                    series_id: str, column_delta: int, series_list: List[Series]
+                ):
+                    sheet_name, series_header, index_start, index_end = series_id.split(
+                        "|"
+                    )
+
+                    updated_index_end = str(int(index_end) + column_delta)
+
+                    # Find the series which starts with sheet_name and has index start and updated_index_end values
+                    series = next(
+                        (
+                            series
+                            for series in series_list
+                            if series.series_id.startswith(sheet_name)
+                            and series.series_id.endswith(updated_index_end)
+                            and series.series_id.split("|")[-2] == index_start
+                        ),
+                        None,
+                    )
+
+                    return series.series_id
 
                 new_tvalue = str(
                     (
@@ -90,6 +113,7 @@ class ASTGenerator:
                                         add_column_delta_to_series_id(
                                             series_id,
                                             start_column_index_delta * (n - 1),
+                                            self.series_list,
                                         )
                                         for series_id in series_ids
                                     ]
@@ -156,7 +180,10 @@ class FormulaGenerator:
     def get_ast_generator(
         formula_1_ast_series: xlcalculator.ast_nodes.ASTNode,
         formula_2_ast_series: xlcalculator.ast_nodes.ASTNode,
+        series_list: List[Series],
     ) -> ASTGenerator:
         """Create an instance of ASTGenerator given two formula_ast objects"""
-        ast_generator = ASTGenerator(formula_1_ast_series, formula_2_ast_series)
+        ast_generator = ASTGenerator(
+            formula_1_ast_series, formula_2_ast_series, series_list
+        )
         return ast_generator

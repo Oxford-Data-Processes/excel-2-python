@@ -181,7 +181,14 @@ class SeriesImplementer:
         )
 
         if series_range.is_column_range:
-            return str(tuple(series_ids_sorted))
+            return str(
+                tuple(
+                    [
+                        series_ids_sorted,
+                        tuple([None, None]),
+                    ]
+                )
+            )
 
         return str(
             tuple(

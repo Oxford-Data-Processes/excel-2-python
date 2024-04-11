@@ -20,9 +20,14 @@ class ASTGenerator:
         node1_tuple = extract_tuples(node1_value)
         node2_tuple = extract_tuples(node2_value)
 
-        if len(node1_tuple) == 1 and len(node2_tuple) == 1:
+        if node1_tuple[1] == (None, None) or node2_tuple[1] == (None, None):
             return None
         else:
+
+            print("node and length")
+            print(node1_tuple)
+            print(len(node1_tuple))
+
             node1_series_ids, node1_row_indexes = node1_tuple
             node1_start_row_index, node1_end_row_index = node1_row_indexes
             node2_series_ids, node2_row_indexes = node2_tuple

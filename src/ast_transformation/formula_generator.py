@@ -17,10 +17,16 @@ class ASTGenerator:
         def extract_tuples(node_value: str):
             return ast.literal_eval(node_value)
 
-        node1_series_ids, node1_row_indexes = extract_tuples(node1_value)
-        node1_start_row_index, node1_end_row_index = node1_row_indexes
-        node2_series_ids, node2_row_indexes = extract_tuples(node2_value)
-        node2_start_row_index, node2_end_row_index = node2_row_indexes
+        node1_tuple = extract_tuples(node1_value)
+        node2_tuple = extract_tuples(node2_value)
+
+        if len(node1_tuple) == 1 and len(node2_tuple) == 1:
+            return None
+        else:
+            node1_series_ids, node1_row_indexes = node1_tuple
+            node1_start_row_index, node1_end_row_index = node1_row_indexes
+            node2_series_ids, node2_row_indexes = node2_tuple
+            node2_start_row_index, node2_end_row_index = node2_row_indexes
 
         start_row_index_delta = node2_start_row_index - node1_start_row_index
         end_row_index_delta = node2_end_row_index - node1_end_row_index

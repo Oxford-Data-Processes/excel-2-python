@@ -60,7 +60,21 @@ class ASTGenerator:
                     start_column_index_delta,
                     end_column_index_delta,
                 ) = deltas
-                new_tvalue = f"{start_row_index_delta}:{end_row_index_delta},{start_column_index_delta}:{end_column_index_delta}"
+
+                series_ids = ast.literal_eval(node1.tvalue)[0]
+                new_tvalue = str(
+                    (
+                        [
+                            series_ids,
+                            (
+                                start_row_index_delta,
+                                end_row_index_delta,
+                                start_column_index_delta,
+                                end_column_index_delta,
+                            ),
+                        ]
+                    )
+                )
 
                 return xlcalculator.ast_nodes.RangeNode(
                     xlcalculator.tokenizer.f_token(

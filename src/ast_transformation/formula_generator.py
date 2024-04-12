@@ -1,9 +1,25 @@
 import xlcalculator
 import ast
-import copy
-
 from typing import List
 from objects import Series
+
+
+class SeriesRangeDelta:
+    def __init__(
+        self,
+        start_row_index_delta,
+        end_row_index_delta,
+        start_column_index_delta,
+        end_column_index_delta,
+        start_row_index,
+        end_row_index,
+    ):
+        self.start_row_index_delta = start_row_index_delta
+        self.end_row_index_delta = end_row_index_delta
+        self.start_column_index_delta = start_column_index_delta
+        self.end_column_index__delta = end_column_index_delta
+        self.start_row_index = start_row_index
+        self.end_row_index = end_row_index
 
 
 class ASTGenerator:
@@ -31,7 +47,10 @@ class ASTGenerator:
             return self.calculate_deltas(node1_tuple, node2_tuple)
 
     @staticmethod
-    def calculate_deltas(node1_tuple, node2_tuple):
+    def calculate_deltas(
+        node1_tuple: tuple[tuple[str], tuple[int, int]],
+        node2_tuple: tuple[tuple[str], tuple[int, int]],
+    ) -> SeriesRangeDelta:
         node1_series_ids, node1_row_indexes = node1_tuple
         node2_series_ids, node2_row_indexes = node2_tuple
 
@@ -44,12 +63,14 @@ class ASTGenerator:
             node1_series_ids[-1].split("|")[-1]
         )
 
-        return (
+        return SeriesRangeDelta(
             start_row_index_delta,
             end_row_index_delta,
             start_column_index_delta,
             end_column_index_delta,
-        ), (node1_row_indexes[0], node1_row_indexes[1])
+            node1_row_indexes[0],
+            node1_row_indexes[-1],
+        )
 
     def apply_delta_to_range_node(
         self,
@@ -73,20 +94,38 @@ class ASTGenerator:
             return node1
 
     def process_range_node(self, node1, node2, n):
-        deltas_and_indexes = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
-        if deltas_and_indexes:
-            deltas, starting_indexes = deltas_and_indexes
-            return self.update_range_node(node1, deltas, starting_indexes, n)
+        series_range_delta = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
+        if series_range_delta:
+
+            start_row_index_delta = series_range_delta.start_row_index_delta
+            end_row_index_delta = series_range_delta.end_row_index_delta
+            start_column_index_delta = series_range_delta.start_column_index_delta
+            end_column_index_delta = series_range_delta.end_column_index__delta
+            start_row_index = series_range_delta.start_row_index
+            end_row_index = series_range_delta.end_row_index
+            return self.update_range_node(
+                node1,
+                start_row_index_delta,
+                end_row_index_delta,
+                start_column_index_delta,
+                end_column_index_delta,
+                start_row_index,
+                end_row_index,
+                n,
+            )
         return node1
 
-    def update_range_node(self, node1, deltas, starting_indexes, n):
-        start_row_index, end_row_index = starting_indexes
-        (
-            start_row_index_delta,
-            end_row_index_delta,
-            start_column_index_delta,
-            end_column_index_delta,
-        ) = deltas
+    def update_range_node(
+        self,
+        node1,
+        start_row_index_delta,
+        end_row_index_delta,
+        start_column_index_delta,
+        end_column_index_delta,
+        start_row_index,
+        end_row_index,
+        n,
+    ):
 
         series_ids = self.extract_tuples(node1.tvalue)[0]
         new_series_ids = [
@@ -118,7 +157,7 @@ class ASTGenerator:
                 == f"{sheet_name}|{series_header}|{index_start}|{updated_index_end}"
             ):
                 return series.series_id
-        return series_id  # fallback if no matching series found
+        return series_id
 
     def process_function_node(self, node1, node2, n):
         modified_args = [

@@ -182,7 +182,7 @@ class FormulaGenerator:
         formula_2_ast_series: xlcalculator.ast_nodes.ASTNode,
         series_list: List[Series],
     ) -> ASTGenerator:
-        """Create an instance of ASTGenerator given two formula_ast objects"""
+        """Create an instance of ASTGenerator given two formula_ast objects and a series_list"""
         ast_generator = ASTGenerator(
             formula_1_ast_series, formula_2_ast_series, series_list
         )

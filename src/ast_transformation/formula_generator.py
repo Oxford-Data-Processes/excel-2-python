@@ -129,7 +129,11 @@ class ASTGenerator:
 
         series_ids = self.extract_tuples(node1.tvalue)[0]
         new_series_ids = [
-            self.add_column_delta_to_series_id(sid, start_column_index_delta * (n - 1))
+            self.add_column_delta_to_series_id(
+                sid,
+                start_column_index_delta * (n - 1),
+                end_column_index_delta * (n - 1),
+            )
             for sid in series_ids
         ]
 
@@ -148,19 +152,23 @@ class ASTGenerator:
             )
         )
 
-    def add_column_delta_to_series_id(self, series_id: str, column_delta: int):
-        sheet_name, series_header, start_column_index, end_column_index = (
+    def add_column_delta_to_series_id(
+        self, series_id: str, start_column_index_delta, end_column_index_delta
+    ):
+        sheet_name, series_header, header_row_index, header_column_index = (
             series_id.split("|")
         )
-        updated_index_end = str(int(end_column_index) + column_delta)
-        for series in self.series_list:
-            if (
-                series.series_id.split("|")[0] == sheet_name
-                and series.series_id.split("|")[2] == start_column_index
-                and series.series_id.split("|")[3] == updated_index_end
-            ):
-                return series.series_id
-        return series_id
+        updated_column_index = str(int(header_column_index) + start_column_index_delta)
+
+        if start_column_index_delta > 0:
+            for series in self.series_list:
+                if (
+                    series.series_id.split("|")[0] == sheet_name
+                    and series.series_id.split("|")[-1] == updated_column_index
+                ):
+                    return series.series_id
+        else:
+            return series_id
 
     def process_function_node(self, node1, node2, n):
         modified_args = [

@@ -148,13 +148,15 @@ class ASTGenerator:
             )
         )
 
-    def add_column_delta_to_series_id(self, series_id, column_delta):
-        sheet_name, series_header, index_start, index_end = series_id.split("|")
-        updated_index_end = str(int(index_end) + column_delta)
+    def add_column_delta_to_series_id(self, series_id, column_delta, series_list):
+        sheet_name, series_header, start_column_index, end_column_index = (
+            series_id.split("|")
+        )
+        updated_index_end = str(int(end_column_index) + column_delta)
         for series in self.series_list:
             if (
                 series.series_id
-                == f"{sheet_name}|{series_header}|{index_start}|{updated_index_end}"
+                == f"{sheet_name}|{series_header}|{start_column_index}|{updated_index_end}"
             ):
                 return series.series_id
         return series_id

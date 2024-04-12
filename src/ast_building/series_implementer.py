@@ -145,7 +145,6 @@ class SeriesImplementer:
         ]
         series_ids_unique = list(set(series_ids))
 
-        # sort series ids by column (second last index), then row (last index): Eg. ('Sheet1|col_2|2|2', 'Sheet1|col_1|2|1', 'Sheet1|col_3|4|2') ==> ('Sheet1|col_2|2|1', 'Sheet1|col_1|2|2', 'Sheet1|col_3|4|2')
         series_ids_sorted = tuple(
             sorted(
                 series_ids_unique, key=lambda x: (x.split("|")[-1], x.split("|")[-3])

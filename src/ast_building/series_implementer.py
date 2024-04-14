@@ -3,42 +3,34 @@ from objects import Cell, Worksheet, Series, SeriesRange
 from coordinate_transformer import CoordinateTransformer
 
 
+class SeriesMappingAccessor:
+    def __init__(self, series_mapping: dict[Worksheet, dict[Cell, Series]]) -> None:
+        self.series_mapping = series_mapping
+
+    def get_series_from_cell(self, worksheet: Worksheet, cell: Cell):
+        try:
+            return self.series_mapping[worksheet][cell]
+        except KeyError:
+            return None
+
+
 class SeriesImplementer:
 
     def __init__(
         self, series_mapping: dict[Worksheet, dict[Cell, Series]], sheet_name: str
     ) -> None:
-        self.series_mapping = series_mapping
         self.sheet_name = sheet_name
+        self.accessor = SeriesMappingAccessor(series_mapping)
 
-    @staticmethod
-    def get_series_from_cell_and_sheet_name(series_mapping, worksheet, cell):
-        try:
-            return series_mapping[worksheet][cell]
-        except KeyError:
-            return None
-
-    @staticmethod
-    def get_cells_between(cell_start: Cell, cell_end: Cell):
-        """cell_start and cell_end as inputs. Get a list of all cells between these two cells."""
-        cells = []
-        for row in range(cell_start.row, cell_end.row + 1):
-            for column in range(cell_start.column, cell_end.column + 1):
-                cells.append(
-                    Cell(
-                        row=row,
-                        column=column,
-                        coordinate=None,
-                        value=None,
-                        value_type=None,
-                    )
-                )
+    def get_cells_between(self, cell_start: Cell, cell_end: Cell) -> list[Cell]:
+        cells = [
+            Cell(row=row, column=column)
+            for row in range(cell_start.row, cell_end.row + 1)
+            for column in range(cell_start.column, cell_end.column + 1)
+        ]
         return cells
 
-    @staticmethod
-    def get_series_range_from_cell_range(
-        series_mapping: dict, sheet_name: str, cell_range: str
-    ) -> list[Series]:
+    def get_series_range_from_cell_range(self, cell_range: str) -> SeriesRange:
         """cell_range is an Excel cell range as a string, eg. 'A1:B2' or 'A:B'"""
 
         (
@@ -64,16 +56,14 @@ class SeriesImplementer:
             value_type=None,
         )
 
-        cells_in_range = SeriesImplementer.get_cells_between(cell_start, cell_end)
+        cells_in_range = self.get_cells_between(cell_start, cell_end)
 
         worksheet = Worksheet(
-            sheet_name=sheet_name, workbook_file_path=None, worksheet=None
+            sheet_name=self.sheet_name, workbook_file_path=None, worksheet=None
         )
 
         series_list = [
-            SeriesImplementer.get_series_from_cell_and_sheet_name(
-                series_mapping=series_mapping, worksheet=worksheet, cell=cell
-            )
+            self.accessor.get_series_from_cell(worksheet, cell)
             for cell in cells_in_range
         ]
 
@@ -145,8 +135,6 @@ class SeriesImplementer:
                 cell_range = ast.tvalue
 
             series_range = self.get_series_range_from_cell_range(
-                series_mapping=self.series_mapping,
-                sheet_name=self.sheet_name,
                 cell_range=cell_range,
             )
             series_ids = self.get_series_ids_from_series_range(series_range)

@@ -23,7 +23,7 @@ class Worksheet:
 class Cell:
     column: int
     row: int
-    coordinate: str
+    coordinate: Optional[str] = None
     value: Optional[Union[int, str, float, bool]] = None
     value_type: Optional[str] = None
 

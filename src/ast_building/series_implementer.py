@@ -1,6 +1,6 @@
 import xlcalculator
 from objects import Cell, Worksheet, Series, SeriesRange
-from coordinate_transformer import CoordinateTransformer
+from excel_utils import ExcelUtils
 
 
 class SeriesMappingAccessor:
@@ -22,14 +22,6 @@ class SeriesImplementer:
         self.sheet_name = sheet_name
         self.accessor = SeriesMappingAccessor(series_mapping)
 
-    def get_cells_between(self, cell_start: Cell, cell_end: Cell) -> list[Cell]:
-        cells = [
-            Cell(row=row, column=column)
-            for row in range(cell_start.row, cell_end.row + 1)
-            for column in range(cell_start.column, cell_end.column + 1)
-        ]
-        return cells
-
     def get_series_range_from_cell_range(self, cell_range: str) -> SeriesRange:
         """cell_range is an Excel cell range as a string, eg. 'A1:B2' or 'A:B'"""
 
@@ -39,7 +31,7 @@ class SeriesImplementer:
             cell_end_column,
             cell_end_row,
             is_column_range,
-        ) = CoordinateTransformer.get_coordinates_from_range(cell_range)
+        ) = ExcelUtils.get_coordinates_from_range(cell_range)
 
         cell_start = Cell(
             column=cell_start_column,
@@ -56,7 +48,7 @@ class SeriesImplementer:
             value_type=None,
         )
 
-        cells_in_range = self.get_cells_between(cell_start, cell_end)
+        cells_in_range = ExcelUtils.get_cells_between(cell_start, cell_end)
 
         worksheet = Worksheet(
             sheet_name=self.sheet_name, workbook_file_path=None, worksheet=None
@@ -110,21 +102,6 @@ class SeriesImplementer:
             )
         )
 
-    @staticmethod
-    def extract_cell_ranges_from_string(cell_range_string: str):
-        if ":" in cell_range_string:
-            cell_range_start, cell_range_end = cell_range_string.split(":")
-        else:
-            cell_range_start = cell_range_string
-            cell_range_end = cell_range_string
-
-        if "!" in cell_range_start:
-            _, cell_range_start = cell_range_start.split("!")
-        if "!" in cell_range_end:
-            _, cell_range_end = cell_range_end.split("!")
-
-        return f"{cell_range_start}:{cell_range_end}"
-
     def update_ast(self, ast):
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
             return self.replace_range_node(ast)
@@ -136,7 +113,7 @@ class SeriesImplementer:
 
     def replace_range_node(self, node):
         if "!" in node.tvalue:
-            cell_range = self.extract_cell_ranges_from_string(node.tvalue)
+            cell_range = ExcelUtils.extract_cell_ranges_from_string(node.tvalue)
         else:
             cell_range = node.tvalue
 

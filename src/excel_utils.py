@@ -1,7 +1,18 @@
 from typing import Tuple, Optional
+from objects import Cell
 
 
-class CoordinateTransformer:
+class ExcelUtils:
+
+    @staticmethod
+    def get_cells_between(cell_start: Cell, cell_end: Cell) -> list[Cell]:
+        cells = [
+            Cell(row=row, column=column)
+            for row in range(cell_start.row, cell_end.row + 1)
+            for column in range(cell_start.column, cell_end.column + 1)
+        ]
+        return cells
+
     @staticmethod
     def get_coordinates_from_cell(cell_coordinate: str):
 
@@ -15,6 +26,21 @@ class CoordinateTransformer:
         row = int(row_str)
 
         return (column, row)
+
+    @staticmethod
+    def extract_cell_ranges_from_string(cell_range_string: str):
+        if ":" in cell_range_string:
+            cell_range_start, cell_range_end = cell_range_string.split(":")
+        else:
+            cell_range_start = cell_range_string
+            cell_range_end = cell_range_string
+
+        if "!" in cell_range_start:
+            _, cell_range_start = cell_range_start.split("!")
+        if "!" in cell_range_end:
+            _, cell_range_end = cell_range_end.split("!")
+
+        return f"{cell_range_start}:{cell_range_end}"
 
     @staticmethod
     def get_coordinates_from_range(
@@ -37,12 +63,10 @@ class CoordinateTransformer:
             cell_end = cell_end + "3"
             is_column_range = True
 
-        cell_start_column, cell_start_row = (
-            CoordinateTransformer.get_coordinates_from_cell(cell_start)
+        cell_start_column, cell_start_row = ExcelUtils.get_coordinates_from_cell(
+            cell_start
         )
-        cell_end_column, cell_end_row = CoordinateTransformer.get_coordinates_from_cell(
-            cell_end
-        )
+        cell_end_column, cell_end_row = ExcelUtils.get_coordinates_from_cell(cell_end)
 
         return (
             cell_start_column,

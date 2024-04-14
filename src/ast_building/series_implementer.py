@@ -125,37 +125,42 @@ class SeriesImplementer:
 
         return f"{cell_range_start}:{cell_range_end}"
 
-    def replace_range_nodes(self, ast):
-
+    def update_ast(self, ast):
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
-
-            if "!" in ast.tvalue:
-                cell_range = self.extract_cell_ranges_from_string(ast.tvalue)
-            else:
-                cell_range = ast.tvalue
-
-            series_range = self.get_series_range_from_cell_range(
-                cell_range=cell_range,
-            )
-            series_ids = self.get_series_ids_from_series_range(series_range)
-
-            return xlcalculator.ast_nodes.RangeNode(
-                xlcalculator.tokenizer.f_token(
-                    tvalue=series_ids, ttype="operand", tsubtype="range"
-                )
-            )
+            return self.replace_range_node(ast)
         elif isinstance(ast, xlcalculator.ast_nodes.FunctionNode):
-
-            modified_args = [self.replace_range_nodes(arg) for arg in ast.args]
-            modified_function_node = xlcalculator.ast_nodes.FunctionNode(ast.token)
-            modified_function_node.args = modified_args
-            return modified_function_node
+            return self.replace_function_node(ast)
         elif isinstance(ast, xlcalculator.ast_nodes.OperatorNode):
-            modified_left = self.replace_range_nodes(ast.left) if ast.left else None
-            modified_right = self.replace_range_nodes(ast.right) if ast.right else None
-            modified_operator_node = xlcalculator.ast_nodes.OperatorNode(ast.token)
-            modified_operator_node.left = modified_left
-            modified_operator_node.right = modified_right
-            return modified_operator_node
+            return self.replace_operator_node(ast)
+        return ast
+
+    def replace_range_node(self, node):
+        if "!" in node.tvalue:
+            cell_range = self.extract_cell_ranges_from_string(node.tvalue)
         else:
-            return ast
+            cell_range = node.tvalue
+
+        series_range = self.get_series_range_from_cell_range(
+            cell_range=cell_range,
+        )
+        series_ids = self.get_series_ids_from_series_range(series_range)
+
+        return xlcalculator.ast_nodes.RangeNode(
+            xlcalculator.tokenizer.f_token(
+                tvalue=series_ids, ttype="operand", tsubtype="range"
+            )
+        )
+
+    def replace_function_node(self, node):
+        modified_args = [self.update_ast(arg) for arg in node.args]
+        modified_function_node = xlcalculator.ast_nodes.FunctionNode(node.token)
+        modified_function_node.args = modified_args
+        return modified_function_node
+
+    def replace_operator_node(self, node):
+        modified_left = self.update_ast(node.left) if node.left else None
+        modified_right = self.update_ast(node.right) if node.right else None
+        modified_operator_node = xlcalculator.ast_nodes.OperatorNode(node.token)
+        modified_operator_node.left = modified_left
+        modified_operator_node.right = modified_right
+        return modified_operator_node

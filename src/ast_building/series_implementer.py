@@ -1,6 +1,6 @@
 import xlcalculator
 from objects import Cell, Worksheet, Series, SeriesRange
-from typing import Tuple, Optional
+from coordinate_transformer import CoordinateTransformer
 
 
 class SeriesImplementer:
@@ -36,56 +36,6 @@ class SeriesImplementer:
         return cells
 
     @staticmethod
-    def get_coordinates_from_cell(cell_coordinate: str):
-
-        column_str = "".join(filter(str.isalpha, cell_coordinate))
-        row_str = "".join(filter(str.isdigit, cell_coordinate))
-
-        column = 0
-        for char in column_str:
-            column = column * 26 + (ord(char.upper()) - ord("A") + 1)
-
-        row = int(row_str)
-
-        return (column, row)
-
-    @staticmethod
-    def get_coordinates_from_range(
-        cell_range: str,
-    ) -> Tuple[int, Optional[int], int, Optional[int], bool]:
-        """Convert Excel-style cell range reference Eg. "A1:B3" or "A1" to numerical row and column indices."""
-
-        if not ":" in cell_range:
-            cell_range = cell_range + ":" + cell_range
-
-        cell_start, cell_end = cell_range.split(":")
-
-        is_column_range = False
-
-        def check_is_column(cell_str: str):
-            return cell_str.isalpha()
-
-        if check_is_column(cell_start) and check_is_column(cell_end):
-            cell_start = cell_start + "1"
-            cell_end = cell_end + "3"
-            is_column_range = True
-
-        cell_start_column, cell_start_row = SeriesImplementer.get_coordinates_from_cell(
-            cell_start
-        )
-        cell_end_column, cell_end_row = SeriesImplementer.get_coordinates_from_cell(
-            cell_end
-        )
-
-        return (
-            cell_start_column,
-            cell_start_row,
-            cell_end_column,
-            cell_end_row,
-            is_column_range,
-        )
-
-    @staticmethod
     def get_series_range_from_cell_range(
         series_mapping: dict, sheet_name: str, cell_range: str
     ) -> list[Series]:
@@ -97,7 +47,7 @@ class SeriesImplementer:
             cell_end_column,
             cell_end_row,
             is_column_range,
-        ) = SeriesImplementer.get_coordinates_from_range(cell_range)
+        ) = CoordinateTransformer.get_coordinates_from_range(cell_range)
 
         cell_start = Cell(
             column=cell_start_column,

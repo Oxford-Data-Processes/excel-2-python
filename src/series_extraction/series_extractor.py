@@ -1,7 +1,7 @@
 from openpyxl.utils import get_column_letter
 from objects import (
     HeaderLocation,
-    ExcelFile,
+    SeriesId,
     Worksheet,
     Table,
     Series,
@@ -135,7 +135,12 @@ class SeriesExtractor:
 
                 series[worksheet.sheet_name].append(
                     Series(
-                        series_id=f"{worksheet.sheet_name}|{series_data['series_header']}|{header_cell_row}|{header_cell_column}",
+                        series_id=SeriesId(
+                            sheet_name=worksheet.sheet_name,
+                            series_header=series_data["series_header"],
+                            series_header_cell_row=header_cell_row,
+                            series_header_cell_column=header_cell_column,
+                        ),
                         worksheet=worksheet,
                         series_header=series_data["series_header"],
                         formulas=series_data["row_formulas"],

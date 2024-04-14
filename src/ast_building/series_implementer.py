@@ -1,5 +1,5 @@
 import xlcalculator
-from objects import Cell, Worksheet, Series, SeriesRange
+from objects import Cell, Worksheet, Series, SeriesRange, SeriesId
 from excel_utils import ExcelUtils
 
 
@@ -72,22 +72,21 @@ class SeriesImplementer:
 
     @staticmethod
     def get_series_ids_from_series_range(series_range: SeriesRange) -> str:
-        series_ids = [
-            str(series.series_id).replace("-", "") for series in series_range.series
-        ]
+        series_ids = [series.series_id for series in series_range.series]
         series_ids_unique = list(set(series_ids))
 
-        series_ids_sorted = tuple(
-            sorted(
-                series_ids_unique, key=lambda x: (x.split("|")[-1], x.split("|")[-3])
-            )
+        series_ids_sorted = sorted(
+            series_ids_unique,
+            key=lambda x: (x.series_header_cell_column, x.series_header),
         )
+
+        series_ids_sorted_strings = tuple([str(sid) for sid in series_ids_sorted])
 
         if series_range.is_column_range:
             return str(
                 tuple(
                     [
-                        series_ids_sorted,
+                        series_ids_sorted_strings,
                         tuple([None, None]),
                     ]
                 )
@@ -96,7 +95,7 @@ class SeriesImplementer:
         return str(
             tuple(
                 [
-                    series_ids_sorted,
+                    series_ids_sorted_strings,
                     tuple([series_range.start_index, series_range.end_index]),
                 ]
             )

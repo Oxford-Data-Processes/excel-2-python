@@ -1,7 +1,21 @@
 import xlcalculator
 import ast
 from typing import List
-from objects import Series
+from objects import Series, SeriesId
+
+
+class SeriesIdLoader:
+    @staticmethod
+    def load_series_id_from_string(series_id_string: str) -> SeriesId:
+        sheet_name, series_header, series_header_cell_row, series_header_cell_column = (
+            series_id_string.split("|")
+        )
+        return SeriesId(
+            sheet_name=sheet_name,
+            series_header=series_header,
+            series_header_cell_row=int(series_header_cell_row),
+            series_header_cell_column=int(series_header_cell_column),
+        )
 
 
 class SeriesRangeDelta:
@@ -55,23 +69,42 @@ class ASTGenerator:
         node1_tuple: tuple[tuple[str], tuple[int, int]],
         node2_tuple: tuple[tuple[str], tuple[int, int]],
     ) -> SeriesRangeDelta:
-        node1_series_ids, node1_row_indexes = node1_tuple
-        node2_series_ids, node2_row_indexes = node2_tuple
 
-        start_row_index_delta = node2_row_indexes[0] - node1_row_indexes[0]
-        end_row_index_delta = node2_row_indexes[1] - node1_row_indexes[1]
-        series_id_start_row_index_delta = int(node2_series_ids[0].split("|")[-2]) - int(
-            node1_series_ids[0].split("|")[-2]
+        node1_series_ids_strings, node1_row_indexes = node1_tuple
+        node2_series_ids_strings, node2_row_indexes = node2_tuple
+
+        node1_series_ids = [
+            SeriesIdLoader.load_series_id_from_string(sid)
+            for sid in node1_series_ids_strings
+        ]
+        node2_series_ids = [
+            SeriesIdLoader.load_series_id_from_string(sid)
+            for sid in node2_series_ids_strings
+        ]
+
+        start_row_index_delta, end_row_index_delta = map(
+            lambda x, y: x - y, node2_row_indexes, node1_row_indexes
         )
-        series_id_end_row_index_delta = int(node2_series_ids[-1].split("|")[-2]) - int(
-            node1_series_ids[-1].split("|")[-2]
+
+        series_id_start_row_index_delta = (
+            node2_series_ids[0].series_header_cell_row
+            - node1_series_ids[0].series_header_cell_row
         )
-        series_id_start_column_index_delta = int(
-            node2_series_ids[0].split("|")[-1]
-        ) - int(node1_series_ids[0].split("|")[-1])
-        series_id_end_column_index_delta = int(
-            node2_series_ids[-1].split("|")[-1]
-        ) - int(node1_series_ids[-1].split("|")[-1])
+
+        series_id_end_row_index_delta = (
+            node2_series_ids[-1].series_header_cell_row
+            - node1_series_ids[-1].series_header_cell_row
+        )
+
+        series_id_start_column_index_delta = (
+            node2_series_ids[0].series_header_cell_column
+            - node1_series_ids[0].series_header_cell_column
+        )
+
+        series_id_end_column_index_delta = (
+            node2_series_ids[-1].series_header_cell_column
+            - node1_series_ids[-1].series_header_cell_column
+        )
 
         return SeriesRangeDelta(
             start_row_index_delta,
@@ -80,8 +113,7 @@ class ASTGenerator:
             series_id_end_row_index_delta,
             series_id_start_column_index_delta,
             series_id_end_column_index_delta,
-            node1_row_indexes[0],
-            node1_row_indexes[1],
+            *node1_row_indexes,
         )
 
     def apply_delta_to_range_node(
@@ -106,6 +138,7 @@ class ASTGenerator:
             return node1
 
     def process_range_node(self, node1, node2, n):
+
         series_range_delta = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
         if series_range_delta:
 
@@ -153,13 +186,18 @@ class ASTGenerator:
         n,
     ):
 
-        series_ids = self.extract_tuples(node1.tvalue)[0]
+        series_ids_string = self.extract_tuples(node1.tvalue)[0]
+        series_ids = [
+            SeriesIdLoader.load_series_id_from_string(sid) for sid in series_ids_string
+        ]
 
         new_series_ids = [
-            self.add_column_delta_to_series_id(
-                sid,
-                series_id_start_row_index_delta * (n - 1),
-                series_id_start_column_index_delta * (n - 1),
+            str(
+                self.add_column_delta_to_series_id(
+                    sid,
+                    series_id_start_row_index_delta * (n - 1),
+                    series_id_start_column_index_delta * (n - 1),
+                )
             )
             for sid in series_ids
         ]
@@ -181,17 +219,17 @@ class ASTGenerator:
 
     def add_column_delta_to_series_id(
         self,
-        series_id: str,
+        series_id: SeriesId,
         series_id_start_row_index_delta,
         series_id_start_column_index_delta,
     ):
-        sheet_name, series_header, header_cell_row, header_cell_column = (
-            series_id.split("|")
+
+        updated_series_header_cell_column = (
+            series_id.series_header_cell_column + series_id_start_column_index_delta
         )
-        updated_column_index = str(
-            int(header_cell_column) + series_id_start_column_index_delta
+        updated_series_header_cell_row = (
+            series_id.series_header_cell_row + series_id_start_row_index_delta
         )
-        updated_row_index = str(int(header_cell_row) + series_id_start_row_index_delta)
 
         if (
             series_id_start_column_index_delta > 0
@@ -200,8 +238,9 @@ class ASTGenerator:
 
             for series in self.series_list:
                 if (
-                    series.series_id.split("|")[0] == sheet_name
-                    and series.series_id.split("|")[3] == updated_column_index
+                    series.series_id.sheet_name == series_id.sheet_name
+                    and series.series_id.series_header_cell_column
+                    == updated_series_header_cell_column
                 ):
                     return series.series_id
 
@@ -212,8 +251,9 @@ class ASTGenerator:
 
             for series in self.series_list:
                 if (
-                    series.series_id.split("|")[0] == sheet_name
-                    and series.series_id.split("|")[2] == updated_row_index
+                    series.series_id.sheet_name == series_id.sheet_name
+                    and series.series_id.series_header_cell_row
+                    == updated_series_header_cell_row
                 ):
                     return series.series_id
         elif (
@@ -223,9 +263,11 @@ class ASTGenerator:
 
             for series in self.series_list:
                 if (
-                    series.series_id.split("|")[0] == sheet_name
-                    and series.series_id.split("|")[2] == updated_row_index
-                    and series.series_id.split("|")[3] == updated_column_index
+                    series.series_id.sheet_name == series_id.sheet_name
+                    and series.series_id.series_header_cell_row
+                    == updated_series_header_cell_row
+                    and series.series_id.series_header_cell_column
+                    == updated_series_header_cell_column
                 ):
                     return series.series_id
         else:

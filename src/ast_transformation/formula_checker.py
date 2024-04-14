@@ -8,4 +8,4 @@ class FormulaChecker:
             ast_generator.formula_1_ast_series
         ) and str(formula_2_ast_new) == str(ast_generator.formula_2_ast_series)
 
-        return formulas_are_correct
+        return formulas_are_correct, formula_1_ast_new, formula_2_ast_new

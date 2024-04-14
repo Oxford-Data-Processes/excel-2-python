@@ -55,9 +55,27 @@ class SeriesDataType(Enum):
     TIME = "time"
 
 
+@dataclass(frozen=True)
+class SeriesId:
+    sheet_name: str
+    series_header: str
+    series_header_cell_row: int
+    series_header_cell_column: int
+
+    def __str__(self):
+        return "|".join(
+            [
+                self.sheet_name,
+                self.series_header,
+                str(self.series_header_cell_row),
+                str(self.series_header_cell_column),
+            ]
+        )
+
+
 @dataclass
 class Series:
-    series_id: str
+    series_id: SeriesId
     worksheet: Worksheet
     series_header: str
     formulas: List[str]

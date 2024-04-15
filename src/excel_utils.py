@@ -14,7 +14,7 @@ class ExcelUtils:
         return cells
 
     @staticmethod
-    def get_coordinates_from_cell(cell_coordinate: str):
+    def get_column_and_row_from_coordinate(cell_coordinate: str):
 
         column_str = "".join(filter(str.isalpha, cell_coordinate))
         row_str = "".join(filter(str.isdigit, cell_coordinate))
@@ -26,6 +26,15 @@ class ExcelUtils:
         row = int(row_str)
 
         return (column, row)
+
+    @staticmethod
+    def get_coordinate_from_column_and_row(column: int, row: int) -> str:
+        column_str = ""
+        while column > 0:
+            column, remainder = divmod(column - 1, 26)
+            column_str = chr(65 + remainder) + column_str
+
+        return f"{column_str}{row}"
 
     @staticmethod
     def extract_cell_ranges_from_string(cell_range_string: str):
@@ -63,10 +72,12 @@ class ExcelUtils:
             cell_end = cell_end + "3"
             is_column_range = True
 
-        cell_start_column, cell_start_row = ExcelUtils.get_coordinates_from_cell(
-            cell_start
+        cell_start_column, cell_start_row = (
+            ExcelUtils.get_column_and_row_from_coordinate(cell_start)
         )
-        cell_end_column, cell_end_row = ExcelUtils.get_coordinates_from_cell(cell_end)
+        cell_end_column, cell_end_row = ExcelUtils.get_column_and_row_from_coordinate(
+            cell_end
+        )
 
         return (
             cell_start_column,

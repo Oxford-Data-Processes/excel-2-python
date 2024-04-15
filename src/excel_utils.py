@@ -14,6 +14,14 @@ class ExcelUtils:
         return cells
 
     @staticmethod
+    def get_column_letter_from_number(column: int) -> str:
+        column_str = ""
+        while column > 0:
+            column, remainder = divmod(column - 1, 26)
+            column_str = chr(65 + remainder) + column_str
+        return column_str
+
+    @staticmethod
     def get_column_and_row_from_coordinate(cell_coordinate: str):
 
         column_str = "".join(filter(str.isalpha, cell_coordinate))
@@ -29,11 +37,7 @@ class ExcelUtils:
 
     @staticmethod
     def get_coordinate_from_column_and_row(column: int, row: int) -> str:
-        column_str = ""
-        while column > 0:
-            column, remainder = divmod(column - 1, 26)
-            column_str = chr(65 + remainder) + column_str
-
+        column_str = ExcelUtils.get_column_letter_from_number(column)
         return f"{column_str}{row}"
 
     @staticmethod

@@ -37,6 +37,21 @@ class CellRange:
         return f"{self.start_cell.coordinate}:{self.end_cell.coordinate}"
 
 
+@dataclass
+class Column:
+    column_number: int
+    column_letter: Optional[str] = None
+
+
+@dataclass
+class CellRangeColumn:
+    start_column: Column
+    end_column: Column
+
+    def __str__(self):
+        return f"{self.start_column.column_letter}:{self.end_column.column_letter}"
+
+
 class HeaderLocation(Enum):
     TOP = "top"
     LEFT = "left"

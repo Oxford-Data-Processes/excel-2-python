@@ -24,6 +24,7 @@ class Cell:
     column: int
     row: int
     coordinate: Optional[str] = None
+    sheet_name: Optional[str] = None
     value: Optional[Union[int, str, float, bool]] = None
     value_type: Optional[str] = None
 
@@ -34,7 +35,7 @@ class CellRange:
     end_cell: "Cell"
 
     def __str__(self):
-        return f"{self.start_cell.coordinate}:{self.end_cell.coordinate}"
+        return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}:{self.end_cell.coordinate}"
 
 
 @dataclass

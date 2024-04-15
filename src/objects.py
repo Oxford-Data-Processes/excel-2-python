@@ -33,6 +33,9 @@ class CellRange:
     start_cell: "Cell"
     end_cell: "Cell"
 
+    def __str__(self):
+        return f"{self.start_cell.coordinate}:{self.end_cell.coordinate}"
+
 
 class HeaderLocation(Enum):
     TOP = "top"

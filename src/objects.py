@@ -35,6 +35,8 @@ class CellRange:
     end_cell: "Cell"
 
     def __str__(self):
+        if self.start_cell == self.end_cell:
+            return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}"
         return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}:{self.end_cell.coordinate}"
 
 
@@ -48,9 +50,10 @@ class Column:
 class CellRangeColumn:
     start_column: Column
     end_column: Column
+    sheet_name: str
 
     def __str__(self):
-        return f"{self.start_column.column_letter}:{self.end_column.column_letter}"
+        return f"{self.sheet_name}!:{self.start_column.column_letter}:{self.end_column.column_letter}"
 
 
 class HeaderLocation(Enum):

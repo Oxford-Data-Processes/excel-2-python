@@ -22,7 +22,9 @@ class SeriesImplementer:
         self.sheet_name = sheet_name
         self.accessor = SeriesMappingAccessor(series_mapping)
 
-    def get_series_range_from_cell_range(self, cell_range: str) -> SeriesRange:
+    def get_series_range_from_cell_range(
+        self, sheet_name: str, cell_range: str
+    ) -> SeriesRange:
         """cell_range is an Excel cell range as a string, eg. 'A1:B2' or 'A:B'"""
 
         (
@@ -36,6 +38,7 @@ class SeriesImplementer:
         cell_start = Cell(
             column=cell_start_column,
             row=cell_start_row,
+            sheet_name=sheet_name,
             coordinate=None,
             value=None,
             value_type=None,
@@ -43,6 +46,7 @@ class SeriesImplementer:
         cell_end = Cell(
             column=cell_end_column,
             row=cell_end_row,
+            sheet_name=sheet_name,
             coordinate=None,
             value=None,
             value_type=None,
@@ -51,7 +55,7 @@ class SeriesImplementer:
         cells_in_range = ExcelUtils.get_cells_between(cell_start, cell_end)
 
         worksheet = Worksheet(
-            sheet_name=self.sheet_name, workbook_file_path=None, worksheet=None
+            sheet_name=sheet_name, workbook_file_path=None, worksheet=None
         )
 
         series_list = [
@@ -112,13 +116,26 @@ class SeriesImplementer:
 
     def replace_range_node(self, node):
         if "!" in node.tvalue:
-            cell_range = ExcelUtils.extract_cell_ranges_from_string(node.tvalue)
+            sheet_name, cell_range = ExcelUtils.extract_cell_ranges_from_string(
+                node.tvalue
+            )
         else:
             cell_range = node.tvalue
+            sheet_name = self.sheet_name
+
+        print("sheet_name inside")
+        print(sheet_name)
+
+        print("cell_range inside")
+        print(cell_range)
 
         series_range = self.get_series_range_from_cell_range(
-            cell_range=cell_range,
+            cell_range=cell_range, sheet_name=sheet_name
         )
+
+        print("series_range inside")
+        print(series_range)
+
         series_ids = self.get_series_ids_from_series_range(series_range)
 
         return xlcalculator.ast_nodes.RangeNode(

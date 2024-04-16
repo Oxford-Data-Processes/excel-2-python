@@ -49,11 +49,11 @@ class ExcelUtils:
             cell_range_end = cell_range_string
 
         if "!" in cell_range_start:
-            _, cell_range_start = cell_range_start.split("!")
+            sheet_name, cell_range_start = cell_range_start.split("!")
         if "!" in cell_range_end:
-            _, cell_range_end = cell_range_end.split("!")
+            sheet_name, cell_range_end = cell_range_end.split("!")
 
-        return f"{cell_range_start}:{cell_range_end}"
+        return sheet_name, f"{cell_range_start}:{cell_range_end}"
 
     @staticmethod
     def get_coordinates_from_range(

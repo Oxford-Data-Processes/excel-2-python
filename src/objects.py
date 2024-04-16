@@ -53,7 +53,7 @@ class CellRangeColumn:
     sheet_name: str
 
     def __str__(self):
-        return f"{self.sheet_name}!:{self.start_column.column_letter}:{self.end_column.column_letter}"
+        return f"{self.sheet_name}!{self.start_column.column_letter}:{self.end_column.column_letter}"
 
 
 class HeaderLocation(Enum):

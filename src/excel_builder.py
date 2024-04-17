@@ -7,7 +7,26 @@ class ExcelBuilder:
     def create_excel_from_openpyxl_workbook(
         workbook: openpyxl.Workbook, output_file_path: str
     ):
-        workbook.save(output_file_path)
+        # Create a new workbook
+        new_workbook = openpyxl.Workbook()
+        new_workbook.remove(
+            new_workbook.active
+        )  # Start with a clean slate by removing the default sheet
+
+        # Iterate over all sheets in the original workbook
+        for sheet in workbook:
+            # Create a new sheet in the new workbook with the same name
+            new_sheet = new_workbook.create_sheet(title=sheet.title)
+
+            # Iterate over all cells in the original sheet
+            for row in sheet.iter_rows():
+                for cell in row:
+                    # Copy all cell values to the new sheet
+                    new_cell = new_sheet.cell(row=cell.row, column=cell.column)
+                    new_cell.value = cell.value
+
+        # Save the new workbook to a file
+        new_workbook.save(output_file_path)
 
     @staticmethod
     def create_excel_from_series(series_list, output_file_path):

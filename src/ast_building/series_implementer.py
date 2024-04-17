@@ -123,21 +123,9 @@ class SeriesImplementer:
             cell_range = node.tvalue
             sheet_name = self.sheet_name
 
-        print("sheet_name inside")
-        print(sheet_name)
-
-        print("node.tvalue inside")
-        print(node.tvalue)
-
-        print("cell_range inside")
-        print(cell_range)
-
         series_range = self.get_series_range_from_cell_range(
             cell_range=cell_range, sheet_name=sheet_name
         )
-
-        print("series_range inside")
-        print(series_range)
 
         series_ids = self.get_series_ids_from_series_range(series_range)
 

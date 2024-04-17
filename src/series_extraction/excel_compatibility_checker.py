@@ -48,9 +48,6 @@ class ExcelCompatibilityChecker:
 
                 if set(raw_headers) != set(reduced_headers):
 
-                    print(raw_headers)
-                    print(reduced_headers)
-
                     return False
 
         return True

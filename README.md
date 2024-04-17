@@ -22,7 +22,6 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - Each column (vertical or horizontal) must have one header (must be characters and no pipes)
 - No Excel "table" objects
 - No pivot tables
-- Sheet names do not have spaces or pipes
 - No hidden tabs
 - No circular references
 - No cell references to column headers in formulas

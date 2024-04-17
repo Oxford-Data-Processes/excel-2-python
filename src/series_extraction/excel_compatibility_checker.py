@@ -1,4 +1,4 @@
-from objects import ExcelFile, Worksheet, Table, HeaderLocation
+from objects import ExcelFile, Worksheet, Table
 from typing import Dict, List
 
 
@@ -14,26 +14,43 @@ class ExcelCompatibilityChecker:
                 raw_ws = excel_raw.workbook_with_values[worksheet.sheet_name]
                 reduced_ws = excel_reduced.workbook_with_values[worksheet.sheet_name]
 
-                if table.header_location == HeaderLocation.TOP:
+                if table.header_location.value == "top":
+
                     raw_headers = [
                         cell.value for cell in raw_ws[table.range.start_cell.row]
                     ]
                     reduced_headers = [
                         cell.value for cell in reduced_ws[table.range.start_cell.row]
                     ]
-                else:
-                    raw_headers = [
-                        raw_ws[cell.coordinate].value
-                        for cell in raw_ws[table.range.start_cell.column]
-                    ]
-                    reduced_headers = [
-                        reduced_ws[cell.coordinate].value
-                        for cell in reduced_ws[table.range.start_cell.column]
-                    ]
 
-                if raw_headers != reduced_headers:
+                elif table.header_location.value == "left":
+
+                    raw_headers = list(
+                        [
+                            cell
+                            for cell in raw_ws.iter_cols(
+                                min_col=table.range.start_cell.column,
+                                max_col=table.range.start_cell.column,
+                                values_only=True,
+                            )
+                        ][0]
+                    )
+                    reduced_headers = list(
+                        [
+                            cell
+                            for cell in reduced_ws.iter_cols(
+                                min_col=table.range.start_cell.column,
+                                max_col=table.range.start_cell.column,
+                                values_only=True,
+                            )
+                        ][0]
+                    )
+
+                if set(raw_headers) != set(reduced_headers):
+
                     print(raw_headers)
                     print(reduced_headers)
+
                     return False
 
         return True

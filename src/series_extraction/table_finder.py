@@ -103,6 +103,9 @@ class TableFinder:
             else:
                 header_values.append(data_object[cell_coordinate]["value"])
 
+        print("header values")
+        print(header_values)
+
         return True, header_values
 
     @staticmethod

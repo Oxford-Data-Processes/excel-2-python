@@ -126,6 +126,9 @@ class SeriesImplementer:
         print("sheet_name inside")
         print(sheet_name)
 
+        print("node.tvalue inside")
+        print(node.tvalue)
+
         print("cell_range inside")
         print(cell_range)
 

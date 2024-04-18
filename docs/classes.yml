@@ -217,6 +217,25 @@ classes:
           - name: excel_reduced_clean
             type: ExcelFile
 
+  - name: ExcelBuilder
+    type: regular
+    description: "Builds an Excel file from workbook and series_list"
+    methods:
+      - name: create_excel_from_workbook
+        type: static
+        inputs:
+          - name: workbook
+            type: openpyxl.Workbook
+          - name: output_file_path
+            type: str
+      - name: create_excel_from_series
+        type: static
+        inputs:
+          - name: series_list
+            type: list
+          - name: output_file_path
+            type: str
+
   - name: TableFinder
     type: regular
     description: "Finds tables in an Excel file"

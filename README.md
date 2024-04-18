@@ -23,6 +23,7 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - No Excel "table" objects
 - No pivot tables
 - No hidden tabs
+- No spaces or pipes in tab names
 - No circular references
 - No cell references to column headers in formulas
 - No references to empty cells

@@ -16,8 +16,6 @@ class ExcelCleaner:
     @staticmethod
     def clean_excel(excel_reduced: ExcelFile) -> ExcelFile:
         for sheet in excel_reduced.workbook_with_formulas.worksheets:
-            # Replace whitespaces in sheet name with underscores and make it lower case
-            sheet.title = sheet.title.replace(" ", "_").replace("|", "").lower()
             for row in sheet.iter_rows():
                 for cell in row:
                     if cell.data_type == "f":

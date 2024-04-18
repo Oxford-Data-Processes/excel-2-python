@@ -38,13 +38,11 @@ Supported functions:
 - AVERAGE
 - IF
 - VLOOKUP
-- HLOOKUP
 - INDEX
 - MATCH
 - COUNT
 - COUNTIF
 - COUNTA
-- UNIQUE
 - COUNTIFS
 - SUMIF
 - SUMIFS
@@ -60,15 +58,10 @@ Supported functions:
 - OR
 - MAX
 - MIN
-- AVERAGEIF
-- AVERAGEIFS
-- IFERROR
-- SUBSTITUTE
 - DATE
 - DAY
 - ROUNDDOWN
 - ROUNDUP
-- TEXTSPLIT
 - TRIM
 
 ### Bugs

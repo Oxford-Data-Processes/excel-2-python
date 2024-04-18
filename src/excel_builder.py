@@ -4,9 +4,7 @@ import openpyxl
 class ExcelBuilder:
 
     @staticmethod
-    def create_excel_from_openpyxl_workbook(
-        workbook: openpyxl.Workbook, output_file_path: str
-    ):
+    def create_excel_from_workbook(workbook: openpyxl.Workbook, output_file_path: str):
         # Create a new workbook
         new_workbook = openpyxl.Workbook()
         new_workbook.remove(

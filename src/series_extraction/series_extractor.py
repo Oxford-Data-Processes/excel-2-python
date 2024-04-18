@@ -61,10 +61,10 @@ class SeriesExtractor:
         return series_data
 
     @staticmethod
-    def extract_table_details(located_tables, data):
+    def extract_table_details(extracted_tables, data):
         tables_data = {}
 
-        for sheet, tables in located_tables.items():
+        for sheet, tables in extracted_tables.items():
             sheet_data = {}
             for table in tables:
                 start_column = table.range.start_cell.column

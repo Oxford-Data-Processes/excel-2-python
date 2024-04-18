@@ -6,28 +6,6 @@ from ast_transformation.formula_generator import FormulaGenerator
 
 
 class SeriesFormulaGenerator:
-    @staticmethod
-    def generate_new_series_formulas(
-        series_list_with_formulas, series_list_with_values, series_dict, series_mapping
-    ):
-
-        series_list_new = []
-
-        for series in series_list_with_formulas:
-            formula_1, formula_2 = SeriesFormulaGenerator.adjust_formulas(
-                series.formulas
-            )
-            if formula_1 is not None and formula_2 is not None:
-                SeriesFormulaGenerator.process_series_formulas(
-                    series,
-                    formula_1,
-                    formula_2,
-                    series_mapping,
-                    series_dict,
-                    series_list_new,
-                )
-
-        return series_list_new + series_list_with_values
 
     @staticmethod
     def adjust_formulas(formulas):

@@ -1,5 +1,5 @@
 import xlcalculator
-from objects import Cell, Worksheet, Series, SeriesRange, SeriesId
+from objects import Cell, Worksheet, Series, SeriesRange
 from excel_utils import ExcelUtils
 
 

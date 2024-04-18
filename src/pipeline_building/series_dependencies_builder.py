@@ -6,6 +6,32 @@ from ast_transformation.formula_generator import SeriesIdLoader
 class SeriesDependenciesBuilder:
 
     @staticmethod
+    def build_dependencies(formula_1_ast_series_list):
+
+        series_dependencies = {}
+
+        # Iterate through each series_id and its corresponding formula AST
+        for series_id, formula_1_ast_series in formula_1_ast_series_list:
+            # Get the list of dependent series_ids from the AST
+            dependencies_series_ids = SeriesDependenciesBuilder.get_series_ids(
+                formula_1_ast_series
+            )
+
+            # Check if the series_id is already in the DAG adjacency list
+            if series_id not in series_dependencies:
+                series_dependencies[series_id] = []
+
+            # Add the dependencies to the series_id's list in the DAG
+            series_dependencies[series_id].extend(dependencies_series_ids)
+
+        # Optional: Remove duplicates if necessary (depends on the application's needs)
+        for key, values in series_dependencies.items():
+            # Convert the list to a set and back to a list to remove duplicates
+            series_dependencies[key] = list(set(values))
+
+        return series_dependencies
+
+    @staticmethod
     def get_series_ids(formula_1_ast_series):
 
         series_range_strings = SeriesDependenciesBuilder.extract_range_values(

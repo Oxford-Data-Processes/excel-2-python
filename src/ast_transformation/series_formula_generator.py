@@ -7,9 +7,16 @@ from ast_transformation.formula_generator import FormulaGenerator
 
 class SeriesFormulaGenerator:
     @staticmethod
-    def generate_new_series_formulas(
-        series_list_with_formulas, series_list_with_values, series_dict, series_mapping
-    ):
+    def generate_new_series_formulas(series_iterator, series_dict, series_mapping):
+        series_list = [series for series in series_iterator]
+
+        series_list_with_formulas = [
+            series for series in series_list if series.formulas != [None, None]
+        ]
+        series_list_with_values = [
+            series for series in series_list if series.formulas == [None, None]
+        ]
+
         series_list_new = []
 
         for series in series_list_with_formulas:

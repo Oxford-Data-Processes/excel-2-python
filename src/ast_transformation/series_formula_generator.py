@@ -16,16 +16,13 @@ class SeriesFormulaGenerator:
 
     @staticmethod
     def process_series_formulas(
-        series, formula_1, formula_2, series_mapping, series_dict, series_list_new
+        series,
+        formula_1_ast_series,
+        formula_2_ast_series,
+        series_mapping,
+        series_dict,
+        series_list_new,
     ):
-        series_implementer = SeriesImplementer(
-            series_mapping, sheet_name=series.worksheet.sheet_name
-        )
-        formula_1_ast = FormulaParser.parse_formula(formula_1)
-        formula_1_ast_series = series_implementer.update_ast(formula_1_ast)
-
-        formula_2_ast = FormulaParser.parse_formula(formula_2)
-        formula_2_ast_series = series_implementer.update_ast(formula_2_ast)
 
         sheet_name = series.worksheet.sheet_name
         series_list_within_sheet = series_dict.get(sheet_name)

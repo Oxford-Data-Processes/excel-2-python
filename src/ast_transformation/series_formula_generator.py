@@ -1,5 +1,3 @@
-from ast_building.formula_parser import FormulaParser
-from ast_building.series_implementer import SeriesImplementer
 from ast_transformation.cell_range_implementer import CellRangeImplementer
 from ast_transformation.formula_checker import FormulaChecker
 from ast_transformation.formula_generator import FormulaGenerator
@@ -39,6 +37,8 @@ class SeriesFormulaGenerator:
         SeriesFormulaGenerator.update_series_with_new_asts(
             series, formula_1_ast_new, formula_2_ast_new, series_dict, series_list_new
         )
+
+        return ast_generator
 
     @staticmethod
     def update_series_with_new_asts(

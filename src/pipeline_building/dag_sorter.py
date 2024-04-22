@@ -15,4 +15,4 @@ class DAGSorter:
         for node in graph:
             visit(node)
 
-        return sorted_nodes[::-1]
+        return sorted_nodes

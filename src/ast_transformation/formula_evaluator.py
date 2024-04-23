@@ -114,3 +114,17 @@ class FormulaEvaluator:
             for i in item:
                 series_id_string_list.append(i)
         return series_id_string_list
+
+    def get_series_from_id(self, series_id):
+        for series in self.series_dict[series_id.sheet_name]:
+            if series.series_id == series_id:
+                return series
+
+    def calculate_series_values(self, ast_generator, index_start, index_end):
+        values = []
+        for index in range(index_start, index_end + 1):
+            formula = ast_generator.get_nth_formula(n=index)
+            formula_evaluator = FormulaEvaluator(formula, self.series_dict)
+            value = formula_evaluator.evaluate_formula(formula)
+            values.append(value)
+        return values

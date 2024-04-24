@@ -82,6 +82,13 @@ class FormulaEvaluator:
         start, end = index_range
         return df.iloc[start : end + 1]
 
+    def IF(self, *args):
+        # xlcalculator's IF function expects arguments as (logical_test, value_if_true, value_if_false)
+        # Ensure that args has exactly three elements
+        if len(args) != 3:
+            raise ValueError("IF function expects exactly three arguments.")
+        return xlcalculator.xlfunctions.logical.IF(*args)
+
     def AVERAGE(self, args):
         identifiers, index_range = args
         series_list = [
@@ -100,7 +107,7 @@ class FormulaEvaluator:
     def evaluate_formula(self, formula):
         formula = str(formula)
         tree = ast.parse(formula, mode="eval")
-        local_env = {"AVERAGE": self.AVERAGE}
+        local_env = {"AVERAGE": self.AVERAGE, "IF": self.IF}
         compiled = compile(tree, filename="<ast>", mode="eval")
         result = eval(compiled, {"__builtins__": {}}, local_env)
         return result

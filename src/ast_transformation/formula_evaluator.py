@@ -17,6 +17,7 @@ class FormulaEvaluator:
         series_id_string_list = FormulaEvaluator.get_series_id_string_list(
             range_nodes_string_list
         )
+
         self.df_dict = {}
         for series_id_string in series_id_string_list:
             df = self.get_dataframe_from_series_id_string(
@@ -26,6 +27,7 @@ class FormulaEvaluator:
 
     @staticmethod
     def extract_series_id_string_list(ast):
+
         series_id_string_list = []
 
         def replace_range_node(node):
@@ -36,7 +38,7 @@ class FormulaEvaluator:
             modified_function_node = xlcalculator.ast_nodes.FunctionNode(node.token)
             modified_function_node.args = modified_args
             return modified_function_node
-
+                    
         def replace_operator_node(node):
             modified_left = traverse_ast(node.left) if node.left else None
             modified_right = traverse_ast(node.right) if node.right else None
@@ -83,17 +85,48 @@ class FormulaEvaluator:
         return df.iloc[start : end + 1]
 
     def IF(self, *args):
-        # xlcalculator's IF function expects arguments as (logical_test, value_if_true, value_if_false)
-        # Ensure that args has exactly three elements
         if len(args) != 3:
             raise ValueError("IF function expects exactly three arguments.")
-        return xlcalculator.xlfunctions.logical.IF(*args)
+        return xlcalculator.xlfunctions.logical.IF(*args)   
+    
+    def AND(self, *args):
+        return xlcalculator.xlfunctions.logical.AND(*args)
+            
+            
+    def ROUND(self, *args):
+
+        value, decimal_points = args
+        if isinstance(value, float):
+            return xlcalculator.xlfunctions.math.ROUND(value, decimal_points)
+        else:    
+            identifiers, index_range = value
+
+            series_df = self.fetch_df(identifiers[0], index_range)
+            number = float(series_df.iloc[0,0])
+
+            return xlcalculator.xlfunctions.math.ROUND(number, decimal_points)
+    
+    def ROUNDDOWN(self, *args):
+
+        value, decimal_points = args
+        if isinstance(value, float):
+            return xlcalculator.xlfunctions.math.ROUNDDOWN(value, decimal_points)
+        else:    
+            identifiers, index_range = value
+
+            series_df = self.fetch_df(identifiers[0], index_range)
+            number = float(series_df.iloc[0,0])
+
+            return xlcalculator.xlfunctions.math.ROUNDDOWN(number, decimal_points)
+
 
     def AVERAGE(self, args):
         identifiers, index_range = args
+        
         series_list = [
             self.fetch_df(identifier, index_range) for identifier in identifiers
         ]
+        
         numbers = [
             item
             for sublist in [
@@ -102,12 +135,29 @@ class FormulaEvaluator:
             ]
             for item in sublist
         ]
+
         return xlcalculator.xlfunctions.statistics.AVERAGE(numbers)
 
+    def VLOOKUP(self, *args):
+        value, table, column, exact_match = args
+        identifiers, index_range = value
+        series_df = self.fetch_df(identifiers[0], index_range)        
+        lookup_value = series_df.iloc[0,0]
+        table_identifiers, table_index_range = table
+        table_series_list = [self.fetch_df(table_identifier, (0,1)) for table_identifier in table_identifiers]
+
+        return xlcalculator.xlfunctions.lookup.VLOOKUP(lookup_value, table_series_list, column, exact_match)
+
+    def SUM(self, *args):
+        identifiers, index_range = args[0]
+        series_list = [self.fetch_df(identifier, index_range) for identifier in identifiers]
+        numbers = [item for sublist in [series.select_dtypes(include=[np.number]).values.flatten() for series in series_list] for item in sublist]
+        return xlcalculator.xlfunctions.math.SUM(numbers)
+
     def evaluate_formula(self, formula):
-        formula = str(formula)
+        formula = str(formula).replace("=", "==")
         tree = ast.parse(formula, mode="eval")
-        local_env = {"AVERAGE": self.AVERAGE, "IF": self.IF}
+        local_env = {"AVERAGE": self.AVERAGE, "VLOOKUP": self.VLOOKUP, "IF": self.IF, "AND": self.AND, "ROUND": self.ROUND, "ROUNDDOWN": self.ROUNDDOWN, "SUM": self.SUM}
         compiled = compile(tree, filename="<ast>", mode="eval")
         result = eval(compiled, {"__builtins__": {}}, local_env)
         return result

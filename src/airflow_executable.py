@@ -11,7 +11,6 @@ from series_extraction.series_mapper import SeriesMapper
 from series_extraction.excel_validator import ExcelValidator
 
 from ast_transformation.series_formula_generator import SeriesFormulaGenerator
-from ast_transformation.formula_generator import SeriesIdLoader
 from ast_transformation.formula_generator import FormulaGenerator
 from ast_transformation.formula_evaluator import FormulaEvaluator
 
@@ -26,9 +25,10 @@ from excel_builder import ExcelBuilder
 from excel_checker import ExcelChecker
 
 
+# %%
 data_directory = "/Users/chrislittle/GitHub/speedsheet/excel-2-python/data"
 
-project_name = "average"
+project_name = "vehicle_data"
 
 excel_raw_file_path = os.path.join(
     data_directory, "excel_files_raw", f"{project_name}_raw.xlsx"

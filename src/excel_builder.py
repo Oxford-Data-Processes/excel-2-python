@@ -27,7 +27,7 @@ class ExcelBuilder:
         new_workbook.save(output_file_path)
 
     @staticmethod
-    def create_excel_from_series(series_list, output_file_path):
+    def create_excel_from_series(series_list, output_file_path, values_only=False):
         # Initialize a new workbook and dictionary to track existing sheets
         wb = openpyxl.Workbook()
         wb.remove(wb.active)  # Start with a clean slate by removing the default sheet
@@ -63,9 +63,13 @@ class ExcelBuilder:
                 row = start_row + i if header_location.value == "top" else start_row
                 col = start_col + i if header_location.value == "left" else start_col
 
-                if formulas != [None, None]:
-                    cell = ws.cell(row=row, column=col)
-                    cell.value = formulas[i]
+                if values_only is False:  # Fill with formulas
+                    if formulas != [None, None]:
+                        cell = ws.cell(row=row, column=col)
+                        cell.value = formulas[i]
+                    else:
+                        cell = ws.cell(row=row, column=col)
+                        cell.value = values[i]
                 else:
                     cell = ws.cell(row=row, column=col)
                     cell.value = values[i]

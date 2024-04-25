@@ -155,7 +155,9 @@ def build_excel_with_python_formulas(
 
     series_list_updated_python = series_list_new_python + series_list_with_values
     ExcelBuilder.create_excel_from_series(
-        series_list_updated_python, excel_reduced_clean_series_python_filepath
+        series_list_updated_python,
+        excel_reduced_clean_series_python_filepath,
+        values_only=True,
     )
 
 
@@ -169,9 +171,4 @@ build_excel_with_python_formulas(
     ast_generator_dict,
     evaluator,
     excel_reduced_clean_series_python_filepath,
-)
-
-# %%
-ExcelChecker.excels_are_equivalent(
-    excel_reduced_clean_filepath, excel_reduced_clean_series_python_filepath
 )

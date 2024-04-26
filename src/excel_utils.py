@@ -22,15 +22,19 @@ class ExcelUtils:
         return column_str
 
     @staticmethod
+    def get_number_from_column_letter(column_str: str) -> int:
+        column = 0
+        for char in column_str:
+            column = column * 26 + (ord(char.upper()) - ord("A") + 1)
+        return column
+
+    @staticmethod
     def get_column_and_row_from_coordinate(cell_coordinate: str):
 
         column_str = "".join(filter(str.isalpha, cell_coordinate))
         row_str = "".join(filter(str.isdigit, cell_coordinate))
 
-        column = 0
-        for char in column_str:
-            column = column * 26 + (ord(char.upper()) - ord("A") + 1)
-
+        column = ExcelUtils.get_number_from_column_letter(column_str)
         row = int(row_str)
 
         return (column, row)

@@ -1,5 +1,5 @@
 from objects import ExcelFile, Worksheet, Table, Cell, CellRange, HeaderLocation
-
+from excel_utils import ExcelUtils
 from typing import Dict, List
 
 
@@ -52,14 +52,6 @@ class TableFinder:
         return tables
 
     @staticmethod
-    def column_number_to_letter(column_number):
-        letter = ""
-        while column_number > 0:
-            column_number, remainder = divmod(column_number - 1, 26)
-            letter = chr(65 + remainder) + letter
-        return letter
-
-    @staticmethod
     def locate_data_tables(data) -> dict:
         located_tables = {}
 
@@ -72,12 +64,12 @@ class TableFinder:
                         "start_cell": {
                             "column": bound[1],
                             "row": bound[0],
-                            "coordinate": f"{TableFinder.column_number_to_letter(bound[1])}{bound[0]}",
+                            "coordinate": f"{ExcelUtils.get_column_letter_from_number(bound[1])}{bound[0]}",
                         },
                         "end_cell": {
                             "column": bound[3],
                             "row": bound[2],
-                            "coordinate": f"{TableFinder.column_number_to_letter(bound[3])}{bound[2]}",
+                            "coordinate": f"{ExcelUtils.get_column_letter_from_number(bound[3])}{bound[2]}",
                         },
                     },
                 }
@@ -96,7 +88,7 @@ class TableFinder:
         header_values = []
 
         for column in range(start_column, end_column + 1):
-            column_letter = TableFinder.column_number_to_letter(column)
+            column_letter = ExcelUtils.get_column_letter_from_number(column)
             cell_coordinate = f"{column_letter}{start_row}"
             if data_object[cell_coordinate]["value_type"] != "str":
                 return False, None
@@ -114,7 +106,7 @@ class TableFinder:
         first_column_values = []
 
         for row in range(start_row, end_row + 1):
-            column_letter = TableFinder.column_number_to_letter(start_column)
+            column_letter = ExcelUtils.get_column_letter_from_number(start_column)
             cell_coordinate = f"{column_letter}{row}"
             first_column_values.append(data_object[cell_coordinate]["value"])
 

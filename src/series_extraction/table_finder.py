@@ -1,51 +1,68 @@
 from objects import ExcelFile, Worksheet, Table, Cell, CellRange, HeaderLocation
 from excel_utils import ExcelUtils
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 
 
 class TableFinder:
+    @staticmethod
+    def _cells_are_adjacent(cell1: Tuple[int, int], cell2: Tuple[int, int]) -> bool:
+        """Check if two cells are adjacent based on their row and column indices."""
+        return abs(cell1[0] - cell2[0]) <= 1 and abs(cell1[1] - cell2[1]) <= 1
 
     @staticmethod
-    def find_table_boundaries(sheet_data: dict):
-        non_empty_cells = {
+    def _extract_non_empty_cells(sheet_data: Dict) -> Set[Tuple[int, int]]:
+        """Extract non-empty cells from the sheet data."""
+        return {
             (cell_data["row"], cell_data["column"])
             for cell_data in sheet_data.values()
             if cell_data["value"] is not None
         }
 
-        def are_adjacent(cell1, cell2):
-            return abs(cell1[0] - cell2[0]) <= 1 and abs(cell1[1] - cell2[1]) <= 1
+    @staticmethod
+    def _expand_cluster(
+        frontier: Set[Tuple[int, int]], non_empty_cells: Set[Tuple[int, int]]
+    ) -> Tuple[Set[Tuple[int, int]], Set[Tuple[int, int]], int, int, int, int]:
+        """Expand the cluster from the frontier cells, updating boundaries."""
+        cluster = set(frontier)
+        new_frontier = set()
+        min_row, max_row = (
+            min(frontier, key=lambda x: x[0])[0],
+            max(frontier, key=lambda x: x[0])[0],
+        )
+        min_col, max_col = (
+            min(frontier, key=lambda x: x[1])[1],
+            max(frontier, key=lambda x: x[1])[1],
+        )
 
+        while frontier:
+            for frontier_cell in frontier:
+                adjacent_cells = {
+                    cell
+                    for cell in non_empty_cells
+                    if TableFinder._cells_are_adjacent(cell, frontier_cell)
+                }
+                for cell in adjacent_cells:
+                    min_row, max_row = min(min_row, cell[0]), max(max_row, cell[0])
+                    min_col, max_col = min(min_col, cell[1]), max(max_col, cell[1])
+                    cluster.add(cell)
+                    new_frontier.add(cell)
+                    non_empty_cells.remove(cell)
+            frontier = new_frontier
+            new_frontier = set()
+
+        return cluster, frontier, min_row, max_row, min_col, max_col
+
+    @staticmethod
+    def find_table_boundaries(sheet_data: Dict) -> List[Tuple[int, int, int, int]]:
+        """Identify table boundaries by clustering adjacent non-empty cells."""
+        non_empty_cells = TableFinder._extract_non_empty_cells(sheet_data)
         tables = []
+
         while non_empty_cells:
-            # Initialize with a single cell
-            cell = non_empty_cells.pop()
-            cluster = {cell}
-            frontier = {cell}
-
-            # Initialize boundaries
-            min_row, max_row = cell[0], cell[0]
-            min_col, max_col = cell[1], cell[1]
-
-            while frontier:
-                new_frontier = set()
-                for frontier_cell in frontier:
-                    # Check adjacent cells
-                    for cell in set(non_empty_cells):
-                        if are_adjacent(cell, frontier_cell):
-                            # Update boundaries
-                            min_row, max_row = min(min_row, cell[0]), max(
-                                max_row, cell[0]
-                            )
-                            min_col, max_col = min(min_col, cell[1]), max(
-                                max_col, cell[1]
-                            )
-
-                            cluster.add(cell)
-                            new_frontier.add(cell)
-                            non_empty_cells.remove(cell)
-
-                frontier = new_frontier
+            initial_cell = non_empty_cells.pop()
+            cluster, frontier, min_row, max_row, min_col, max_col = (
+                TableFinder._expand_cluster({initial_cell}, non_empty_cells)
+            )
 
             tables.append((min_row, min_col, max_row, max_col))
 

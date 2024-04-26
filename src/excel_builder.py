@@ -16,19 +16,25 @@ class ExcelBuilder:
 
     @staticmethod
     def create_excel_from_series(
-        series_list: List[Series], output_file_path: str, values_only: bool = False
+        series_collection: List[Series],
+        output_file_path: str,
+        values_only: bool = False,
     ) -> None:
         """Create an Excel file from a list of series, optionally using only values or formulas."""
-        wb = openpyxl.Workbook()
-        ExcelBuilder._remove_default_sheet(wb)
-        ws_dict: Dict[str, openpyxl.worksheet.worksheet.Worksheet] = {}
+        new_workbook = openpyxl.Workbook()
+        ExcelBuilder._remove_default_sheet(new_workbook)
+        worksheets_dictionary: Dict[str, openpyxl.worksheet.worksheet.Worksheet] = {}
 
-        for series in series_list:
-            ws = ExcelBuilder._get_or_create_worksheet(wb, series, ws_dict)
-            ExcelBuilder._place_series_header(ws, series)
-            ExcelBuilder._fill_cells_with_data(ws, series, values_only)
+        for series_item in series_collection:
+            current_worksheet = ExcelBuilder._get_or_create_worksheet(
+                new_workbook, series_item, worksheets_dictionary
+            )
+            ExcelBuilder._place_series_header(current_worksheet, series_item)
+            ExcelBuilder._fill_cells_with_data(
+                current_worksheet, series_item, values_only
+            )
 
-        wb.save(output_file_path)
+        new_workbook.save(output_file_path)
 
     @staticmethod
     def _remove_default_sheet(workbook: openpyxl.Workbook) -> None:
@@ -39,18 +45,18 @@ class ExcelBuilder:
     def _get_or_create_worksheet(
         workbook: openpyxl.Workbook,
         series: Series,
-        worksheet_dict: Dict[str, openpyxl.worksheet.worksheet.Worksheet],
+        worksheets_dictionary: Dict[str, openpyxl.worksheet.worksheet.Worksheet],
     ) -> openpyxl.worksheet.worksheet.Worksheet:
         """Get an existing worksheet by name or create a new one if it doesn't exist."""
         sheet_name = series.series_id.sheet_name
-        if sheet_name not in worksheet_dict:
+        if sheet_name not in worksheets_dictionary:
             ws = (
                 workbook.create_sheet(title=sheet_name)
                 if sheet_name not in workbook.sheetnames
                 else workbook[sheet_name]
             )
-            worksheet_dict[sheet_name] = ws
-        return worksheet_dict[sheet_name]
+            worksheets_dictionary[sheet_name] = ws
+        return worksheets_dictionary[sheet_name]
 
     @staticmethod
     def _place_series_header(

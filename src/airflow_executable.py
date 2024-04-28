@@ -3,7 +3,7 @@ import os
 
 from series_extraction.excel_loader import ExcelLoader
 from series_extraction.excel_cleaner import ExcelCleaner
-from series_extraction.table_finder import TableFinder
+from series_extraction.table_extractor import TableFinder
 from series_extraction.series_extractor import SeriesExtractor
 from series_extraction.excel_compatibility_checker import ExcelCompatibilityChecker
 from series_extraction.series_iterator import SeriesIterator

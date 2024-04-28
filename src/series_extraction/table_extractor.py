@@ -178,7 +178,7 @@ class DataExtractor:
         return located_tables
 
 
-class TableFinder:
+class TableExtractor:
 
     @staticmethod
     def extract_cell_data(cell_values, cell_formulas) -> Cell:
@@ -210,12 +210,12 @@ class TableFinder:
             ws_values.iter_rows(), ws_formulas.iter_rows()
         ):
             for cell_values, cell_formulas in zip(row_values, row_formulas):
-                cell = TableFinder.extract_cell_data(cell_values, cell_formulas)
+                cell = TableExtractor.extract_cell_data(cell_values, cell_formulas)
                 sheet_data[cell.coordinate] = cell
         return sheet_data
 
     @staticmethod
-    def find_tables(
+    def extract_tables(
         excel_file: ExcelFile,
     ) -> Dict[Worksheet, List[Table]]:
         data = {}
@@ -227,7 +227,7 @@ class TableFinder:
                 sheet_name=ws_values.title,
                 worksheet=ws_values,
             )
-            sheet_data = TableFinder.extract_sheet_data(ws_values, ws_formulas)
+            sheet_data = TableExtractor.extract_sheet_data(ws_values, ws_formulas)
             data[worksheet.sheet_name] = sheet_data
 
         located_tables = DataExtractor.get_header_location_and_values(data)

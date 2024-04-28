@@ -1,14 +1,14 @@
-from objects import ExcelFile, Worksheet, Table, HeaderLocation, Cell, CellRange
+from objects import (
+    ExcelFile,
+    Worksheet,
+    Table,
+    LocatedTables,
+    HeaderLocation,
+    Cell,
+    CellRange,
+)
 from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union, Any
-
-from dataclasses import dataclass, field
-
-
-@dataclass
-class LocatedTables:
-    sheet_name: str
-    tables: List[Table] = field(default_factory=list)
 
 
 class CellOperations:

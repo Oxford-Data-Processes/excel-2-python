@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Union
 from enum import Enum
 
@@ -68,6 +68,12 @@ class Table:
     range: CellRange
     header_location: Optional[HeaderLocation] = None
     header_values: Optional[List[Union[int, str, float, bool]]] = None
+
+
+@dataclass
+class LocatedTables:
+    sheet_name: str
+    tables: List[Table] = field(default_factory=list)
 
 
 class SeriesDataType(Enum):

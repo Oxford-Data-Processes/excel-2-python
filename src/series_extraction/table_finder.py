@@ -6,15 +6,9 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class LocatedTable:
-    name: str
-    range: CellRange
-
-
-@dataclass
 class LocatedTables:
     sheet_name: str
-    tables: List[LocatedTable] = field(default_factory=list)
+    tables: List[Table] = field(default_factory=list)
 
 
 class CellOperations:
@@ -97,7 +91,7 @@ class TableLocator:
             tables_for_sheet = LocatedTables(sheet_name=sheet_name)
 
             for index, bound in enumerate(table_boundaries):
-                table = LocatedTable(
+                table = Table(
                     name=f"{sheet_name}_{index+1}",
                     range=CellRange(
                         start_cell=Cell(

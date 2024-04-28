@@ -4,7 +4,6 @@ from typing import Dict, List, Set, Tuple, Optional, Union, Any
 
 from dataclasses import dataclass
 
-
 @dataclass
 class CellRange:
     start_cell: "Cell"
@@ -26,6 +25,12 @@ class Cell:
     value_type: Optional[str] = None
     formula: Optional[str] = None
 
+
+@dataclass
+class LocatedTables:
+    sheet_name: str
+    tables: List[Table]
+    
 
 class CellOperations:
 
@@ -99,7 +104,7 @@ class TableLocator:
         return tables
 
     @staticmethod
-    def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> Dict[str, List[Dict]]:
+    def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> LocatedTables:
         located_tables = {}
 
         for sheet_name, sheet_data in data.items():

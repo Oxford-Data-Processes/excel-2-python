@@ -1,6 +1,18 @@
-from objects import ExcelFile, Worksheet, Table, Cell, CellRange, HeaderLocation
+from objects import ExcelFile, Worksheet, Table, CellRange, HeaderLocation
 from excel_utils import ExcelUtils
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional, Union
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Cell:
+    column: int
+    row: int
+    coordinate: Optional[str] = None
+    sheet_name: Optional[str] = None
+    value: Optional[Union[int, str, float, bool]] = None
+    value_type: Optional[str] = None
 
 
 class TableFinder:
@@ -84,16 +96,18 @@ class TableFinder:
                 {
                     "name": f"{sheet_name}_{index+1}",
                     "range": {
-                        "start_cell": {
-                            "column": bound[1],
-                            "row": bound[0],
-                            "coordinate": f"{ExcelUtils.get_column_letter_from_number(bound[1])}{bound[0]}",
-                        },
-                        "end_cell": {
-                            "column": bound[3],
-                            "row": bound[2],
-                            "coordinate": f"{ExcelUtils.get_column_letter_from_number(bound[3])}{bound[2]}",
-                        },
+                        "start_cell": Cell(
+                            column=bound[1],
+                            row=bound[0],
+                            coordinate=f"{ExcelUtils.get_column_letter_from_number(bound[1])}{bound[0]}",
+                            sheet_name=sheet_name,
+                        ),
+                        "end_cell": Cell(
+                            column=bound[3],
+                            row=bound[2],
+                            coordinate=f"{ExcelUtils.get_column_letter_from_number(bound[3])}{bound[2]}",
+                            sheet_name=sheet_name,
+                        ),
                     },
                 }
                 for index, bound in enumerate(table_boundaries)
@@ -104,15 +118,15 @@ class TableFinder:
     @staticmethod
     def are_first_row_values_strings(range_input, data_object):
 
-        start_column = range_input["range"]["start_cell"]["column"]
-        start_row = range_input["range"]["start_cell"]["row"]
-        end_column = range_input["range"]["end_cell"]["column"]
+        start_cell = range_input["range"]["start_cell"]
+        end_cell = range_input["range"]["end_cell"]
 
         header_values = []
 
-        for column in range(start_column, end_column + 1):
-            column_letter = ExcelUtils.get_column_letter_from_number(column)
-            cell_coordinate = f"{column_letter}{start_row}"
+        for column in range(start_cell.column, end_cell.column + 1):
+            cell_coordinate = (
+                f"{ExcelUtils.get_column_letter_from_number(column)}{start_cell.row}"
+            )
             if data_object[cell_coordinate]["value_type"] != "str":
                 return False, None
             else:
@@ -122,15 +136,15 @@ class TableFinder:
 
     @staticmethod
     def get_first_column_values(range_input, data_object):
-        start_row = range_input["range"]["start_cell"]["row"]
-        end_row = range_input["range"]["end_cell"]["row"]
-        start_column = range_input["range"]["start_cell"]["column"]
+        start_cell = range_input["range"]["start_cell"]
+        end_cell = range_input["range"]["end_cell"]
 
         first_column_values = []
 
-        for row in range(start_row, end_row + 1):
-            column_letter = ExcelUtils.get_column_letter_from_number(start_column)
-            cell_coordinate = f"{column_letter}{row}"
+        for row in range(start_cell.row, end_cell.row + 1):
+            cell_coordinate = (
+                f"{ExcelUtils.get_column_letter_from_number(start_cell.column)}{row}"
+            )
             first_column_values.append(data_object[cell_coordinate]["value"])
 
         return first_column_values
@@ -201,14 +215,14 @@ class TableFinder:
             worksheet_tables = []
             for table in tables:
                 range_start = Cell(
-                    column=table["range"]["start_cell"]["column"],
-                    row=table["range"]["start_cell"]["row"],
-                    coordinate=table["range"]["start_cell"]["coordinate"],
+                    column=table["range"]["start_cell"].column,
+                    row=table["range"]["start_cell"].row,
+                    coordinate=table["range"]["start_cell"].coordinate,
                 )
                 range_end = Cell(
-                    column=table["range"]["end_cell"]["column"],
-                    row=table["range"]["end_cell"]["row"],
-                    coordinate=table["range"]["end_cell"]["coordinate"],
+                    column=table["range"]["end_cell"].column,
+                    row=table["range"]["end_cell"].row,
+                    coordinate=table["range"]["end_cell"].coordinate,
                 )
                 cell_range = CellRange(start_cell=range_start, end_cell=range_end)
                 header_location = HeaderLocation(table["header_location"])

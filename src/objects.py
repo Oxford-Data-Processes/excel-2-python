@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, List, Union
 from enum import Enum
+from excel_utils import ExcelUtils
 
 import openpyxl
 
@@ -28,6 +29,14 @@ class Cell:
     value: Optional[Union[int, str, float, bool]] = None
     value_type: Optional[str] = None
     formula: Optional[str] = None
+
+    def __post_init__(self):
+        object.__setattr__(self, "coordinate", self.calculate_coordinate())
+
+    def calculate_coordinate(self) -> str:
+        if self.column and self.row:
+            return f"{ExcelUtils.get_column_letter_from_number(self.column)}{self.row}"
+        return None
 
 
 @dataclass

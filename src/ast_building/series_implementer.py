@@ -22,6 +22,15 @@ class SeriesImplementer:
         self.sheet_name = sheet_name
         self.accessor = SeriesMappingAccessor(series_mapping)
 
+    @staticmethod
+    def get_cells_between(cell_start: Cell, cell_end: Cell) -> list[Cell]:
+        cells = [
+            Cell(row=row, column=column)
+            for row in range(cell_start.row, cell_end.row + 1)
+            for column in range(cell_start.column, cell_end.column + 1)
+        ]
+        return cells
+
     def get_series_range_from_cell_range(
         self, sheet_name: str, cell_range: str
     ) -> SeriesRange:
@@ -52,7 +61,7 @@ class SeriesImplementer:
             value_type=None,
         )
 
-        cells_in_range = ExcelUtils.get_cells_between(cell_start, cell_end)
+        cells_in_range = SeriesImplementer.get_cells_between(cell_start, cell_end)
 
         worksheet = Worksheet(sheet_name=sheet_name)
 

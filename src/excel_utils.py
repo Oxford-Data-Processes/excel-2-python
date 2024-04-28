@@ -1,17 +1,7 @@
 from typing import Tuple, Optional
-from objects import Cell
 
 
 class ExcelUtils:
-
-    @staticmethod
-    def get_cells_between(cell_start: Cell, cell_end: Cell) -> list[Cell]:
-        cells = [
-            Cell(row=row, column=column)
-            for row in range(cell_start.row, cell_end.row + 1)
-            for column in range(cell_start.column, cell_end.column + 1)
-        ]
-        return cells
 
     @staticmethod
     def get_column_letter_from_number(column: int) -> str:

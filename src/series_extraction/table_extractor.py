@@ -86,13 +86,11 @@ class TableLocator:
                     start_cell=Cell(
                         column=min_col,
                         row=min_row,
-                        coordinate=f"{ExcelUtils.get_column_letter_from_number(min_col)}{min_row}",
                         sheet_name=sheet_name,
                     ),
                     end_cell=Cell(
                         column=max_col,
                         row=max_row,
-                        coordinate=f"{ExcelUtils.get_column_letter_from_number(max_col)}{max_row}",
                         sheet_name=sheet_name,
                     ),
                 ),

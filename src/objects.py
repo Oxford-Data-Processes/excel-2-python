@@ -66,8 +66,8 @@ class HeaderLocation(Enum):
 class Table:
     name: str
     range: CellRange
-    header_location: HeaderLocation
-    header_values: List[str]
+    header_location: Optional[HeaderLocation] = None
+    header_values: Optional[List[Union[int, str, float, bool]]] = None
 
 
 class SeriesDataType(Enum):

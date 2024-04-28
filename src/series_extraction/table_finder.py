@@ -36,11 +36,7 @@ class TableFinder:
     @staticmethod
     def _extract_non_empty_cells(sheet_data: Dict) -> Set[Cell]:
         """Extract non-empty cells from the sheet data."""
-        return {
-            Cell(row=data["row"], column=data["column"], value=data["value"])
-            for data in sheet_data.values()
-            if data["value"] is not None
-        }
+        return {cell for cell in sheet_data.values() if cell.value is not None}
 
     @staticmethod
     def _process_frontier(frontier: Set[Cell], non_empty_cells: Set[Cell]) -> Set[Cell]:
@@ -139,10 +135,10 @@ class TableFinder:
             cell_coordinate = (
                 f"{ExcelUtils.get_column_letter_from_number(column)}{start_cell.row}"
             )
-            if data_object[cell_coordinate]["value_type"] != "str":
+            if data_object[cell_coordinate].value_type != "str":
                 return False, None
             else:
-                header_values.append(data_object[cell_coordinate]["value"])
+                header_values.append(data_object[cell_coordinate].value)
 
         return True, header_values
 
@@ -157,7 +153,7 @@ class TableFinder:
             cell_coordinate = (
                 f"{ExcelUtils.get_column_letter_from_number(start_cell.column)}{row}"
             )
-            first_column_values.append(data_object[cell_coordinate]["value"])
+            first_column_values.append(data_object[cell_coordinate].value)
 
         return first_column_values
 
@@ -193,14 +189,15 @@ class TableFinder:
             and cell_formulas.value.startswith("=")
             else None
         )
-        return {
-            "value": cell_value,
-            "value_type": cell_value_type,
-            "row": cell_values.row,
-            "column": cell_values.column,
-            "coordinate": cell_coordinate,
-            "formula": formula,
-        }
+        return Cell(
+            column=cell_values.column,
+            row=cell_values.row,
+            coordinate=cell_coordinate,
+            sheet_name=cell_values.parent.title,
+            value=cell_value,
+            value_type=cell_value_type,
+            formula=formula,
+        )
 
     @staticmethod
     def extract_sheet_data(ws_values, ws_formulas):
@@ -209,8 +206,8 @@ class TableFinder:
             ws_values.iter_rows(), ws_formulas.iter_rows()
         ):
             for cell_values, cell_formulas in zip(row_values, row_formulas):
-                cell_data = TableFinder.extract_cell_data(cell_values, cell_formulas)
-                sheet_data[cell_values.coordinate] = cell_data
+                cell = TableFinder.extract_cell_data(cell_values, cell_formulas)
+                sheet_data[cell.coordinate] = cell
         return sheet_data
 
     @staticmethod

@@ -28,8 +28,8 @@ class SeriesExtractor:
         }
         for row in range(start_row + 1, start_row + 3):
             cell = data[sheet.sheet_name][f"{get_column_letter(col_index)}{row}"]
-            series_data["row_formulas"].append(cell.get("formula"))
-            series_data["row_values"].append(cell.get("value"))
+            series_data["row_formulas"].append(cell.formula)
+            series_data["row_values"].append(cell.value)
 
         if series_data["row_values"]:
             series_data["data_type"] = type(series_data["row_values"][0]).__name__
@@ -52,8 +52,8 @@ class SeriesExtractor:
             cell = data[sheet.sheet_name][
                 f"{get_column_letter(start_column + col_offset)}{row_index}"
             ]
-            series_data["row_formulas"].append(cell.get("formula"))
-            series_data["row_values"].append(cell.get("value"))
+            series_data["row_formulas"].append(cell.formula)
+            series_data["row_values"].append(cell.value)
 
         if series_data["row_values"]:
             series_data["data_type"] = type(series_data["row_values"][0]).__name__

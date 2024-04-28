@@ -1,36 +1,7 @@
-from objects import ExcelFile, Worksheet, Table, HeaderLocation
+from objects import ExcelFile, Worksheet, Table, HeaderLocation, Cell, CellRange
 from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union, Any
 
-from dataclasses import dataclass
-
-@dataclass
-class CellRange:
-    start_cell: "Cell"
-    end_cell: "Cell"
-
-    def __str__(self):
-        if self.start_cell == self.end_cell:
-            return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}"
-        return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}:{self.end_cell.coordinate}"
-
-
-@dataclass(frozen=True)
-class Cell:
-    column: int
-    row: int
-    coordinate: Optional[str] = None
-    sheet_name: Optional[str] = None
-    value: Optional[Union[int, str, float, bool]] = None
-    value_type: Optional[str] = None
-    formula: Optional[str] = None
-
-
-@dataclass
-class LocatedTables:
-    sheet_name: str
-    tables: List[Table]
-    
 
 class CellOperations:
 
@@ -104,15 +75,15 @@ class TableLocator:
         return tables
 
     @staticmethod
-    def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> LocatedTables:
+    def locate_data_tables(data: Dict[str, Dict[str, Cell]]):
         located_tables = {}
 
         for sheet_name, sheet_data in data.items():
             table_boundaries = TableLocator.find_table_boundaries(sheet_data)
             located_tables[sheet_name] = [
-                {
-                    "name": f"{sheet_name}_{index+1}",
-                    "range": CellRange(
+                Table(
+                    name=f"{sheet_name}_{index+1}",
+                    range=CellRange(
                         start_cell=Cell(
                             column=bound[1],
                             row=bound[0],
@@ -126,7 +97,7 @@ class TableLocator:
                             sheet_name=sheet_name,
                         ),
                     ),
-                }
+                )
                 for index, bound in enumerate(table_boundaries)
             ]
 
@@ -179,17 +150,17 @@ class DataExtractor:
         located_tables = TableLocator.locate_data_tables(data)
 
         for sheet, table_details in located_tables.items():
-            for item in table_details:
+            for table in table_details:
                 boolean, header_values = DataExtractor.are_first_row_values_strings(
-                    item["range"], data[sheet]
+                    table.range, data[sheet]
                 )
                 if boolean:
-                    item["header_location"] = "top"
-                    item["header_values"] = header_values
+                    table.header_location = "top"
+                    table.header_values = header_values
                 else:
-                    item["header_location"] = "left"
-                    item["header_values"] = DataExtractor.get_first_column_values(
-                        item["range"], data[sheet]
+                    table.header_location = "left"
+                    table.header_values = DataExtractor.get_first_column_values(
+                        table.range, data[sheet]
                     )
 
         return located_tables
@@ -232,14 +203,14 @@ class TableFinder:
         return sheet_data
 
     @staticmethod
-    def create_table_object(table: Dict[str, Any]) -> Table:
-        cell_range = table["range"]
-        header_location = HeaderLocation(table["header_location"])
+    def create_table_object(table: Table) -> Table:
+        cell_range = table.range
+        header_location = HeaderLocation(table.header_location)
         return Table(
-            name=table["name"],
+            name=table.name,
             range=cell_range,
             header_location=header_location,
-            header_values=table["header_values"],
+            header_values=table.header_values,
         )
 
     @staticmethod

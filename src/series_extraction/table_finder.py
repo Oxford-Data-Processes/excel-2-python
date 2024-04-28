@@ -27,7 +27,8 @@ class Cell:
     formula: Optional[str] = None
 
 
-class TableFinder:
+class CellOperations:
+
     @staticmethod
     def _cells_are_adjacent(cell1: Cell, cell2: Cell) -> bool:
         """Check if two cells are adjacent based on their row and column indices."""
@@ -38,6 +39,9 @@ class TableFinder:
         """Extract non-empty cells from the sheet data."""
         return {cell for cell in sheet_data.values() if cell.value is not None}
 
+
+class TableFinder:
+
     @staticmethod
     def _process_frontier(frontier: Set[Cell], non_empty_cells: Set[Cell]) -> Set[Cell]:
         """Identify and process all adjacent cells for the given frontier."""
@@ -46,7 +50,7 @@ class TableFinder:
             adjacent_cells = {
                 cell
                 for cell in non_empty_cells
-                if TableFinder._cells_are_adjacent(cell, frontier_cell)
+                if CellOperations._cells_are_adjacent(cell, frontier_cell)
             }
             non_empty_cells.difference_update(adjacent_cells)
             new_frontier.update(adjacent_cells)
@@ -82,7 +86,7 @@ class TableFinder:
     @staticmethod
     def find_table_boundaries(sheet_data: Dict) -> List[Tuple[int, int, int, int]]:
         """Identify table boundaries by clustering adjacent non-empty cells."""
-        non_empty_cells = TableFinder._extract_non_empty_cells(sheet_data)
+        non_empty_cells = CellOperations._extract_non_empty_cells(sheet_data)
         tables = []
 
         while non_empty_cells:

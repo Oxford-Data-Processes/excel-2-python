@@ -69,9 +69,9 @@ class TableLocator:
 
     @staticmethod
     def find_table_boundaries(
-        sheet_data: Dict[str, Cell]
-    ) -> List[Tuple[int, int, int, int]]:
-        """Identify table boundaries by clustering adjacent non-empty cells."""
+        sheet_name: str, sheet_data: Dict[str, Cell]
+    ) -> List[Table]:
+        """Identify table boundaries by clustering adjacent non-empty cells and return as Table objects."""
         non_empty_cells = CellOperations._extract_non_empty_cells(sheet_data)
         tables = []
 
@@ -80,39 +80,38 @@ class TableLocator:
             cluster, min_row, max_row, min_col, max_col = TableLocator._expand_cluster(
                 {initial_cell}, non_empty_cells
             )
-            tables.append((min_row, min_col, max_row, max_col))
+            table = Table(
+                name=f"{sheet_name}_{len(tables) + 1}",
+                range=CellRange(
+                    start_cell=Cell(
+                        column=min_col,
+                        row=min_row,
+                        coordinate=f"{ExcelUtils.get_column_letter_from_number(min_col)}{min_row}",
+                        sheet_name=sheet_name,
+                    ),
+                    end_cell=Cell(
+                        column=max_col,
+                        row=max_row,
+                        coordinate=f"{ExcelUtils.get_column_letter_from_number(max_col)}{max_row}",
+                        sheet_name=sheet_name,
+                    ),
+                ),
+            )
+            tables.append(table)
 
         return tables
 
     @staticmethod
     def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> List[LocatedTables]:
+        """Locate tables in the given data."""
         all_located_tables = []
 
         for sheet_name, sheet_data in data.items():
-            table_boundaries = TableLocator.find_table_boundaries(sheet_data)
-            tables_for_sheet = LocatedTables(worksheet=Worksheet(sheet_name=sheet_name))
-
-            for index, bound in enumerate(table_boundaries):
-                table = Table(
-                    name=f"{sheet_name}_{index+1}",
-                    range=CellRange(
-                        start_cell=Cell(
-                            column=bound[1],
-                            row=bound[0],
-                            coordinate=f"{ExcelUtils.get_column_letter_from_number(bound[1])}{bound[0]}",
-                            sheet_name=sheet_name,
-                        ),
-                        end_cell=Cell(
-                            column=bound[3],
-                            row=bound[2],
-                            coordinate=f"{ExcelUtils.get_column_letter_from_number(bound[3])}{bound[2]}",
-                            sheet_name=sheet_name,
-                        ),
-                    ),
-                )
-                tables_for_sheet.tables.append(table)
-
-            all_located_tables.append(tables_for_sheet)
+            tables = TableLocator.find_table_boundaries(sheet_name, sheet_data)
+            located_tables = LocatedTables(
+                worksheet=Worksheet(sheet_name=sheet_name), tables=tables
+            )
+            all_located_tables.append(located_tables)
 
         return all_located_tables
 

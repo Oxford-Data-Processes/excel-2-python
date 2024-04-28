@@ -1,6 +1,6 @@
 from objects import ExcelFile, Worksheet, Table, HeaderLocation
 from excel_utils import ExcelUtils
-from typing import Dict, List, Set, Tuple, Optional, Union
+from typing import Dict, List, Set, Tuple, Optional, Union, Any
 
 from dataclasses import dataclass
 
@@ -95,7 +95,7 @@ class TableFinder:
         return tables
 
     @staticmethod
-    def locate_data_tables(data) -> dict:
+    def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> Dict[str, List[Dict]]:
         located_tables = {}
 
         for sheet_name, sheet_data in data.items():
@@ -124,7 +124,9 @@ class TableFinder:
         return located_tables
 
     @staticmethod
-    def are_first_row_values_strings(range_input: CellRange, data_object):
+    def are_first_row_values_strings(
+        range_input: CellRange, data_object: Dict[str, Cell]
+    ) -> Tuple[bool, Optional[List[Union[int, str, float, bool]]]]:
 
         start_cell = range_input.start_cell
         end_cell = range_input.end_cell
@@ -143,7 +145,9 @@ class TableFinder:
         return True, header_values
 
     @staticmethod
-    def get_first_column_values(range_input: CellRange, data_object):
+    def get_first_column_values(
+        range_input: CellRange, data_object: Dict[str, Cell]
+    ) -> List[Union[int, str, float, bool]]:
         start_cell = range_input.start_cell
         end_cell = range_input.end_cell
 
@@ -158,7 +162,7 @@ class TableFinder:
         return first_column_values
 
     @staticmethod
-    def get_header_location_and_values(data):
+    def get_header_location_and_values(data: Dict[str, Any]) -> Dict[str, Any]:
 
         located_tables = TableFinder.locate_data_tables(data)
 
@@ -179,7 +183,7 @@ class TableFinder:
         return located_tables
 
     @staticmethod
-    def extract_cell_data(cell_values, cell_formulas):
+    def extract_cell_data(cell_values, cell_formulas) -> Cell:
         cell_coordinate = cell_values.coordinate
         cell_value = cell_values.value
         cell_value_type = type(cell_value).__name__
@@ -200,7 +204,9 @@ class TableFinder:
         )
 
     @staticmethod
-    def extract_sheet_data(ws_values, ws_formulas):
+    def extract_sheet_data(
+        ws_values: Worksheet, ws_formulas: Worksheet
+    ) -> Dict[str, Cell]:
         sheet_data = {}
         for row_values, row_formulas in zip(
             ws_values.iter_rows(), ws_formulas.iter_rows()
@@ -211,7 +217,7 @@ class TableFinder:
         return sheet_data
 
     @staticmethod
-    def create_table_object(table):
+    def create_table_object(table: Dict[str, Any]) -> Table:
         cell_range = table["range"]
         header_location = HeaderLocation(table["header_location"])
         return Table(

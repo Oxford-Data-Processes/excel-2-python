@@ -5,34 +5,34 @@ from typing import Dict, List, Set, Tuple
 
 class TableFinder:
     @staticmethod
-    def _cells_are_adjacent(cell1: Tuple[int, int], cell2: Tuple[int, int]) -> bool:
+    def _cells_are_adjacent(cell1: Cell, cell2: Cell) -> bool:
         """Check if two cells are adjacent based on their row and column indices."""
-        return abs(cell1[0] - cell2[0]) <= 1 and abs(cell1[1] - cell2[1]) <= 1
+        return abs(cell1.row - cell2.row) <= 1 and abs(cell1.column - cell2.column) <= 1
 
     @staticmethod
-    def _extract_non_empty_cells(sheet_data: Dict) -> Set[Tuple[int, int]]:
+    def _extract_non_empty_cells(sheet_data: Dict) -> Set[Cell]:
         """Extract non-empty cells from the sheet data."""
         return {
-            (cell_data["row"], cell_data["column"])
+            Cell(
+                row=cell_data["row"],
+                column=cell_data["column"],
+                value=cell_data["value"],
+            )
             for cell_data in sheet_data.values()
             if cell_data["value"] is not None
         }
 
     @staticmethod
     def _expand_cluster(
-        frontier: Set[Tuple[int, int]], non_empty_cells: Set[Tuple[int, int]]
-    ) -> Tuple[Set[Tuple[int, int]], Set[Tuple[int, int]], int, int, int, int]:
+        frontier: Set[Cell], non_empty_cells: Set[Cell]
+    ) -> Tuple[Set[Cell], Set[Cell], int, int, int, int]:
         """Expand the cluster from the frontier cells, updating boundaries."""
         cluster = set(frontier)
         new_frontier = set()
-        min_row, max_row = (
-            min(frontier, key=lambda x: x[0])[0],
-            max(frontier, key=lambda x: x[0])[0],
-        )
-        min_col, max_col = (
-            min(frontier, key=lambda x: x[1])[1],
-            max(frontier, key=lambda x: x[1])[1],
-        )
+        min_row = min(frontier, key=lambda x: x.row).row
+        max_row = max(frontier, key=lambda x: x.row).row
+        min_col = min(frontier, key=lambda x: x.column).column
+        max_col = max(frontier, key=lambda x: x.column).column
 
         while frontier:
             for frontier_cell in frontier:
@@ -42,8 +42,10 @@ class TableFinder:
                     if TableFinder._cells_are_adjacent(cell, frontier_cell)
                 }
                 for cell in adjacent_cells:
-                    min_row, max_row = min(min_row, cell[0]), max(max_row, cell[0])
-                    min_col, max_col = min(min_col, cell[1]), max(max_col, cell[1])
+                    min_row = min(min_row, cell.row)
+                    max_row = max(max_row, cell.row)
+                    min_col = min(min_col, cell.column)
+                    max_col = max(max_col, cell.column)
                     cluster.add(cell)
                     new_frontier.add(cell)
                     non_empty_cells.remove(cell)

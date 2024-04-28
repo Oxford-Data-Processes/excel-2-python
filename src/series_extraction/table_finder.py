@@ -68,7 +68,9 @@ class TableLocator:
         return cluster, min_row, max_row, min_col, max_col
 
     @staticmethod
-    def find_table_boundaries(sheet_data: Dict) -> List[Tuple[int, int, int, int]]:
+    def find_table_boundaries(
+        sheet_data: Dict[str, Cell]
+    ) -> List[Tuple[int, int, int, int]]:
         """Identify table boundaries by clustering adjacent non-empty cells."""
         non_empty_cells = CellOperations._extract_non_empty_cells(sheet_data)
         tables = []

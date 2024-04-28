@@ -24,6 +24,7 @@ class Cell:
     sheet_name: Optional[str] = None
     value: Optional[Union[int, str, float, bool]] = None
     value_type: Optional[str] = None
+    formula: Optional[str] = None
 
 
 class TableFinder:
@@ -182,6 +183,48 @@ class TableFinder:
         return located_tables
 
     @staticmethod
+    def extract_cell_data(cell_values, cell_formulas):
+        cell_coordinate = cell_values.coordinate
+        cell_value = cell_values.value
+        cell_value_type = type(cell_value).__name__
+        formula = (
+            cell_formulas.value
+            if isinstance(cell_formulas.value, str)
+            and cell_formulas.value.startswith("=")
+            else None
+        )
+        return {
+            "value": cell_value,
+            "value_type": cell_value_type,
+            "row": cell_values.row,
+            "column": cell_values.column,
+            "coordinate": cell_coordinate,
+            "formula": formula,
+        }
+
+    @staticmethod
+    def extract_sheet_data(ws_values, ws_formulas):
+        sheet_data = {}
+        for row_values, row_formulas in zip(
+            ws_values.iter_rows(), ws_formulas.iter_rows()
+        ):
+            for cell_values, cell_formulas in zip(row_values, row_formulas):
+                cell_data = TableFinder.extract_cell_data(cell_values, cell_formulas)
+                sheet_data[cell_values.coordinate] = cell_data
+        return sheet_data
+
+    @staticmethod
+    def create_table_object(table):
+        cell_range = table["range"]
+        header_location = HeaderLocation(table["header_location"])
+        return Table(
+            name=table["name"],
+            range=cell_range,
+            header_location=header_location,
+            header_values=table["header_values"],
+        )
+
+    @staticmethod
     def find_tables(
         excel_file: ExcelFile,
     ) -> Dict[Worksheet, List[Table]]:
@@ -195,45 +238,16 @@ class TableFinder:
                 workbook_file_path=None,
                 worksheet=ws_values,
             )
-            sheet_data = {}
-            for row_values, row_formulas in zip(
-                ws_values.iter_rows(), ws_formulas.iter_rows()
-            ):
-                for cell_values, cell_formulas in zip(row_values, row_formulas):
-                    cell_coordinate = cell_values.coordinate
-                    cell_value = cell_values.value
-                    cell_value_type = type(cell_value).__name__
-                    formula = (
-                        cell_formulas.value
-                        if isinstance(cell_formulas.value, str)
-                        and cell_formulas.value.startswith("=")
-                        else None
-                    )
-                    sheet_data[cell_coordinate] = {
-                        "value": cell_value,
-                        "value_type": cell_value_type,
-                        "row": cell_values.row,
-                        "column": cell_values.column,
-                        "coordinate": cell_coordinate,
-                        "formula": formula,
-                    }
+            sheet_data = TableFinder.extract_sheet_data(ws_values, ws_formulas)
             data[worksheet.sheet_name] = sheet_data
 
         located_tables = TableFinder.get_header_location_and_values(data)
 
         extracted_tables = {}
         for sheet_name, tables in located_tables.items():
-            worksheet_tables = []
-            for table in tables:
-                cell_range = table["range"]
-                header_location = HeaderLocation(table["header_location"])
-                table_obj = Table(
-                    name=table["name"],
-                    range=cell_range,
-                    header_location=header_location,
-                    header_values=table["header_values"],
-                )
-                worksheet_tables.append(table_obj)
+            worksheet_tables = [
+                TableFinder.create_table_object(table) for table in tables
+            ]
             extracted_tables[
                 Worksheet(
                     sheet_name=sheet_name,

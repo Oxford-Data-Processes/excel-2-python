@@ -27,6 +27,7 @@ class Cell:
     sheet_name: Optional[str] = None
     value: Optional[Union[int, str, float, bool]] = None
     value_type: Optional[str] = None
+    formula: Optional[str] = None
 
 
 @dataclass

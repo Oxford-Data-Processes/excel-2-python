@@ -1,8 +1,19 @@
-from objects import ExcelFile, Worksheet, Table, CellRange, HeaderLocation
+from objects import ExcelFile, Worksheet, Table, HeaderLocation
 from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union
 
 from dataclasses import dataclass
+
+
+@dataclass
+class CellRange:
+    start_cell: "Cell"
+    end_cell: "Cell"
+
+    def __str__(self):
+        if self.start_cell == self.end_cell:
+            return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}"
+        return f"{self.start_cell.sheet_name}!{self.start_cell.coordinate}:{self.end_cell.coordinate}"
 
 
 @dataclass(frozen=True)
@@ -95,20 +106,20 @@ class TableFinder:
             located_tables[sheet_name] = [
                 {
                     "name": f"{sheet_name}_{index+1}",
-                    "range": {
-                        "start_cell": Cell(
+                    "range": CellRange(
+                        start_cell=Cell(
                             column=bound[1],
                             row=bound[0],
                             coordinate=f"{ExcelUtils.get_column_letter_from_number(bound[1])}{bound[0]}",
                             sheet_name=sheet_name,
                         ),
-                        "end_cell": Cell(
+                        end_cell=Cell(
                             column=bound[3],
                             row=bound[2],
                             coordinate=f"{ExcelUtils.get_column_letter_from_number(bound[3])}{bound[2]}",
                             sheet_name=sheet_name,
                         ),
-                    },
+                    ),
                 }
                 for index, bound in enumerate(table_boundaries)
             ]
@@ -116,10 +127,10 @@ class TableFinder:
         return located_tables
 
     @staticmethod
-    def are_first_row_values_strings(range_input, data_object):
+    def are_first_row_values_strings(range_input: CellRange, data_object):
 
-        start_cell = range_input["range"]["start_cell"]
-        end_cell = range_input["range"]["end_cell"]
+        start_cell = range_input.start_cell
+        end_cell = range_input.end_cell
 
         header_values = []
 
@@ -135,9 +146,9 @@ class TableFinder:
         return True, header_values
 
     @staticmethod
-    def get_first_column_values(range_input, data_object):
-        start_cell = range_input["range"]["start_cell"]
-        end_cell = range_input["range"]["end_cell"]
+    def get_first_column_values(range_input: CellRange, data_object):
+        start_cell = range_input.start_cell
+        end_cell = range_input.end_cell
 
         first_column_values = []
 
@@ -157,7 +168,7 @@ class TableFinder:
         for sheet, table_details in located_tables.items():
             for item in table_details:
                 boolean, header_values = TableFinder.are_first_row_values_strings(
-                    item, data[sheet]
+                    item["range"], data[sheet]
                 )
                 if boolean:
                     item["header_location"] = "top"
@@ -165,7 +176,7 @@ class TableFinder:
                 else:
                     item["header_location"] = "left"
                     item["header_values"] = TableFinder.get_first_column_values(
-                        item, data[sheet]
+                        item["range"], data[sheet]
                     )
 
         return located_tables
@@ -214,17 +225,7 @@ class TableFinder:
         for sheet_name, tables in located_tables.items():
             worksheet_tables = []
             for table in tables:
-                range_start = Cell(
-                    column=table["range"]["start_cell"].column,
-                    row=table["range"]["start_cell"].row,
-                    coordinate=table["range"]["start_cell"].coordinate,
-                )
-                range_end = Cell(
-                    column=table["range"]["end_cell"].column,
-                    row=table["range"]["end_cell"].row,
-                    coordinate=table["range"]["end_cell"].coordinate,
-                )
-                cell_range = CellRange(start_cell=range_start, end_cell=range_end)
+                cell_range = table["range"]
                 header_location = HeaderLocation(table["header_location"])
                 table_obj = Table(
                     name=table["name"],

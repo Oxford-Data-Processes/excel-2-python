@@ -128,7 +128,7 @@ class TableLocator:
         return located_tables
 
 
-class TableFinder:
+class DataExtractor:
 
     @staticmethod
     def are_first_row_values_strings(
@@ -175,7 +175,7 @@ class TableFinder:
 
         for sheet, table_details in located_tables.items():
             for item in table_details:
-                boolean, header_values = TableFinder.are_first_row_values_strings(
+                boolean, header_values = DataExtractor.are_first_row_values_strings(
                     item["range"], data[sheet]
                 )
                 if boolean:
@@ -183,11 +183,14 @@ class TableFinder:
                     item["header_values"] = header_values
                 else:
                     item["header_location"] = "left"
-                    item["header_values"] = TableFinder.get_first_column_values(
+                    item["header_values"] = DataExtractor.get_first_column_values(
                         item["range"], data[sheet]
                     )
 
         return located_tables
+
+
+class TableFinder:
 
     @staticmethod
     def extract_cell_data(cell_values, cell_formulas) -> Cell:
@@ -251,7 +254,7 @@ class TableFinder:
             sheet_data = TableFinder.extract_sheet_data(ws_values, ws_formulas)
             data[worksheet.sheet_name] = sheet_data
 
-        located_tables = TableFinder.get_header_location_and_values(data)
+        located_tables = DataExtractor.get_header_location_and_values(data)
 
         extracted_tables = {}
         for sheet_name, tables in located_tables.items():

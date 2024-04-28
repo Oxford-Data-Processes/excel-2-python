@@ -40,7 +40,7 @@ class CellOperations:
         return {cell for cell in sheet_data.values() if cell.value is not None}
 
 
-class TableFinder:
+class TableLocator:
 
     @staticmethod
     def _process_frontier(frontier: Set[Cell], non_empty_cells: Set[Cell]) -> Set[Cell]:
@@ -75,8 +75,8 @@ class TableFinder:
         """Expand the cluster from the frontier cells, updating boundaries."""
         cluster = set(frontier)
         while frontier:
-            new_frontier = TableFinder._process_frontier(frontier, non_empty_cells)
-            cluster, min_row, max_row, min_col, max_col = TableFinder._update_cluster(
+            new_frontier = TableLocator._process_frontier(frontier, non_empty_cells)
+            cluster, min_row, max_row, min_col, max_col = TableLocator._update_cluster(
                 cluster, new_frontier
             )
             frontier = new_frontier
@@ -91,7 +91,7 @@ class TableFinder:
 
         while non_empty_cells:
             initial_cell = non_empty_cells.pop()
-            cluster, min_row, max_row, min_col, max_col = TableFinder._expand_cluster(
+            cluster, min_row, max_row, min_col, max_col = TableLocator._expand_cluster(
                 {initial_cell}, non_empty_cells
             )
             tables.append((min_row, min_col, max_row, max_col))
@@ -103,7 +103,7 @@ class TableFinder:
         located_tables = {}
 
         for sheet_name, sheet_data in data.items():
-            table_boundaries = TableFinder.find_table_boundaries(sheet_data)
+            table_boundaries = TableLocator.find_table_boundaries(sheet_data)
             located_tables[sheet_name] = [
                 {
                     "name": f"{sheet_name}_{index+1}",
@@ -126,6 +126,9 @@ class TableFinder:
             ]
 
         return located_tables
+
+
+class TableFinder:
 
     @staticmethod
     def are_first_row_values_strings(
@@ -168,7 +171,7 @@ class TableFinder:
     @staticmethod
     def get_header_location_and_values(data: Dict[str, Any]) -> Dict[str, Any]:
 
-        located_tables = TableFinder.locate_data_tables(data)
+        located_tables = TableLocator.locate_data_tables(data)
 
         for sheet, table_details in located_tables.items():
             for item in table_details:

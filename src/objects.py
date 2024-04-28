@@ -15,8 +15,8 @@ class ExcelFile:
 @dataclass(frozen=True)
 class Worksheet:
     sheet_name: str
-    workbook_file_path: Optional[str]
-    worksheet: Optional[openpyxl.worksheet.worksheet.Worksheet]
+    workbook_file_path: Optional[str] = None
+    worksheet: Optional[openpyxl.worksheet.worksheet.Worksheet] = None
 
 
 @dataclass(frozen=True)
@@ -72,7 +72,7 @@ class Table:
 
 @dataclass
 class LocatedTables:
-    sheet_name: str
+    worksheet: Worksheet
     tables: List[Table] = field(default_factory=list)
 
 

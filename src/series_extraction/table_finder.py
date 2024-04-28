@@ -88,7 +88,7 @@ class TableLocator:
 
         for sheet_name, sheet_data in data.items():
             table_boundaries = TableLocator.find_table_boundaries(sheet_data)
-            tables_for_sheet = LocatedTables(sheet_name=sheet_name)
+            tables_for_sheet = LocatedTables(worksheet=Worksheet(sheet_name=sheet_name))
 
             for index, bound in enumerate(table_boundaries):
                 table = Table(
@@ -163,7 +163,7 @@ class DataExtractor:
         for located_table in located_tables:
             for table in located_table.tables:
                 boolean, header_values = DataExtractor.are_first_row_values_strings(
-                    table.range, data[located_table.sheet_name]
+                    table.range, data[located_table.worksheet.sheet_name]
                 )
                 if boolean:
                     table.header_location = HeaderLocation.TOP
@@ -171,7 +171,7 @@ class DataExtractor:
                 else:
                     table.header_location = HeaderLocation.LEFT
                     table.header_values = DataExtractor.get_first_column_values(
-                        table.range, data[located_table.sheet_name]
+                        table.range, data[located_table.worksheet.sheet_name]
                     )
 
         return located_tables
@@ -224,7 +224,6 @@ class TableFinder:
         ):
             worksheet = Worksheet(
                 sheet_name=ws_values.title,
-                workbook_file_path=None,
                 worksheet=ws_values,
             )
             sheet_data = TableFinder.extract_sheet_data(ws_values, ws_formulas)
@@ -235,11 +234,7 @@ class TableFinder:
         extracted_tables = {}
         for located_table in located_tables:
             extracted_tables[
-                Worksheet(
-                    sheet_name=located_table.sheet_name,
-                    workbook_file_path=None,
-                    worksheet=None,
-                )
+                Worksheet(sheet_name=located_table.worksheet.sheet_name)
             ] = located_table.tables
 
         return extracted_tables, data

@@ -32,9 +32,7 @@ class SeriesMapper:
         """Get mapping from Cell to row index and Series"""
         series_mapping = {}
         for sheet_name, series in series_dict.items():
-            worksheet = Worksheet(
-                sheet_name=sheet_name, workbook_file_path=None, worksheet=None
-            )
+            worksheet = Worksheet(sheet_name=sheet_name)
             series_mapping[worksheet] = {}
             for _, s in enumerate(series):
                 cells = SeriesMapper.get_cells(s)

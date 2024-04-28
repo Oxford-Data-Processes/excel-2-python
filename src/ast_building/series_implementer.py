@@ -54,9 +54,7 @@ class SeriesImplementer:
 
         cells_in_range = ExcelUtils.get_cells_between(cell_start, cell_end)
 
-        worksheet = Worksheet(
-            sheet_name=sheet_name, workbook_file_path=None, worksheet=None
-        )
+        worksheet = Worksheet(sheet_name=sheet_name)
 
         series_list = [
             self.accessor.get_series_from_cell(worksheet, cell)

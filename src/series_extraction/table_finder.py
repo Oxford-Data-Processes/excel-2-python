@@ -2,6 +2,20 @@ from objects import ExcelFile, Worksheet, Table, HeaderLocation, Cell, CellRange
 from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union, Any
 
+from dataclasses import dataclass, field
+
+
+@dataclass
+class LocatedTable:
+    name: str
+    range: CellRange
+
+
+@dataclass
+class LocatedTables:
+    sheet_name: str
+    tables: List[LocatedTable] = field(default_factory=list)
+
 
 class CellOperations:
 
@@ -75,13 +89,15 @@ class TableLocator:
         return tables
 
     @staticmethod
-    def locate_data_tables(data: Dict[str, Dict[str, Cell]]):
-        located_tables = {}
+    def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> List[LocatedTables]:
+        all_located_tables = []
 
         for sheet_name, sheet_data in data.items():
             table_boundaries = TableLocator.find_table_boundaries(sheet_data)
-            located_tables[sheet_name] = [
-                Table(
+            tables_for_sheet = LocatedTables(sheet_name=sheet_name)
+
+            for index, bound in enumerate(table_boundaries):
+                table = LocatedTable(
                     name=f"{sheet_name}_{index+1}",
                     range=CellRange(
                         start_cell=Cell(
@@ -98,10 +114,11 @@ class TableLocator:
                         ),
                     ),
                 )
-                for index, bound in enumerate(table_boundaries)
-            ]
+                tables_for_sheet.tables.append(table)
 
-        return located_tables
+            all_located_tables.append(tables_for_sheet)
+
+        return all_located_tables
 
 
 class DataExtractor:
@@ -145,22 +162,22 @@ class DataExtractor:
         return first_column_values
 
     @staticmethod
-    def get_header_location_and_values(data: Dict[str, Any]) -> Dict[str, Any]:
+    def get_header_location_and_values(data: Dict[str, Any]) -> List[LocatedTables]:
 
         located_tables = TableLocator.locate_data_tables(data)
 
-        for sheet, table_details in located_tables.items():
-            for table in table_details:
+        for located_table in located_tables:
+            for table in located_table.tables:
                 boolean, header_values = DataExtractor.are_first_row_values_strings(
-                    table.range, data[sheet]
+                    table.range, data[located_table.sheet_name]
                 )
                 if boolean:
-                    table.header_location = "top"
+                    table.header_location = HeaderLocation.TOP
                     table.header_values = header_values
                 else:
-                    table.header_location = "left"
+                    table.header_location = HeaderLocation.LEFT
                     table.header_values = DataExtractor.get_first_column_values(
-                        table.range, data[sheet]
+                        table.range, data[located_table.sheet_name]
                     )
 
         return located_tables
@@ -203,17 +220,6 @@ class TableFinder:
         return sheet_data
 
     @staticmethod
-    def create_table_object(table: Table) -> Table:
-        cell_range = table.range
-        header_location = HeaderLocation(table.header_location)
-        return Table(
-            name=table.name,
-            range=cell_range,
-            header_location=header_location,
-            header_values=table.header_values,
-        )
-
-    @staticmethod
     def find_tables(
         excel_file: ExcelFile,
     ) -> Dict[Worksheet, List[Table]]:
@@ -233,16 +239,13 @@ class TableFinder:
         located_tables = DataExtractor.get_header_location_and_values(data)
 
         extracted_tables = {}
-        for sheet_name, tables in located_tables.items():
-            worksheet_tables = [
-                TableFinder.create_table_object(table) for table in tables
-            ]
+        for located_table in located_tables:
             extracted_tables[
                 Worksheet(
-                    sheet_name=sheet_name,
+                    sheet_name=located_table.sheet_name,
                     workbook_file_path=None,
                     worksheet=None,
                 )
-            ] = worksheet_tables
+            ] = located_table.tables
 
         return extracted_tables, data

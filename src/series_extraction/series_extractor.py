@@ -84,16 +84,6 @@ class SeriesExtractor:
                 start_cell_column, start_cell_row, header_location
             )
         )
-        print("BUILD_SERIES")
-        print("start_cell_row")
-        print(start_cell_row)
-        print("start_cell_column")
-        print(start_cell_column)
-
-        print("series_header_cell_row")
-        print(series_header_cell_row)
-        print("series_header_cell_column")
-        print(series_header_cell_column)
 
         series_id = SeriesId(
             sheet_name=sheet.sheet_name,
@@ -202,31 +192,6 @@ class SeriesExtractor:
         for worksheet_obj, table_data in detailed_series.items():
             series_collection[worksheet_obj.sheet_name] = []
             for _, single_series in table_data.items():
-                series_starting_cell_column, series_starting_cell_row = (
-                    single_series.series_starting_cell.column,
-                    single_series.series_starting_cell.row,
-                )
-                series_header_cell_row, series_header_cell_column = (
-                    SeriesExtractor.calculate_header_cell(
-                        series_starting_cell_column,
-                        series_starting_cell_row,
-                        single_series.header_location,
-                    )
-                )
-
-                print("EXTRACT_SERIES")
-                print("series_starting_cell_column")
-                print(series_starting_cell_column)
-                print("series_starting_cell_row")
-                print(series_starting_cell_row)
-                print("series_header_cell_row")
-                print(series_header_cell_row)
-                print("series_header_cell_column")
-                print(series_header_cell_column)
-                print("series_id_series_header_cell_row")
-                print(single_series.series_id.series_header_cell_row)
-                print("series_id_series_header_cell_column")
-                print(single_series.series_id.series_header_cell_column)
 
                 series_instance = Series(
                     series_id=SeriesId(

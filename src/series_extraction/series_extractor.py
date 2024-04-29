@@ -50,6 +50,7 @@ from typing import Dict, List
 #     series_length: int
 #     series_data_type: SeriesDataType
 
+
 class SeriesExtractor:
 
     @staticmethod
@@ -166,14 +167,10 @@ class SeriesExtractor:
         return tables_data
 
     @staticmethod
-    def calculate_header_cell(series):
-        column, row = (
-            series.series_starting_cell.column,
-            series.series_starting_cell.row,
-        )
+    def calculate_header_cell(column, row, header_location):
         return (
             (row - 1, column)
-            if series.header_location == HeaderLocation.TOP
+            if header_location == HeaderLocation.TOP
             else (row, column - 1)
         )
 
@@ -191,8 +188,14 @@ class SeriesExtractor:
         for worksheet_obj, table_data in detailed_series.items():
             series_collection[worksheet_obj.sheet_name] = []
             for _, single_series in table_data.items():
+                column, row = (
+                    single_series.series_starting_cell.column,
+                    single_series.series_starting_cell.row,
+                )
                 header_cell_row, header_cell_column = (
-                    SeriesExtractor.calculate_header_cell(single_series)
+                    SeriesExtractor.calculate_header_cell(
+                        column, row, single_series.header_location
+                    )
                 )
                 series_instance = Series(
                     series_id=SeriesId(

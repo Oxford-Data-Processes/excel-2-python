@@ -1,69 +1,31 @@
-from openpyxl.utils import get_column_letter
 from objects import (
     HeaderLocation,
     Worksheet,
+    WorkbookData,
     Table,
     Cell,
     Series,
     SeriesId,
     SeriesDataType,
 )
+from openpyxl.utils import get_column_letter
 
 from typing import Dict, List
-
-
-# class SeriesDataType(Enum):
-#     INT = "int"
-#     STR = "str"
-#     FLOAT = "float"
-#     BOOL = "bool"
-#     TIME = "time"
-
-
-# @dataclass(frozen=True)
-# class SeriesId:
-#     sheet_name: str
-#     series_header: str
-#     series_header_cell_row: int
-#     series_header_cell_column: int
-
-#     def __str__(self):
-#         return "|".join(
-#             [
-#                 self.sheet_name,
-#                 self.series_header,
-#                 str(self.series_header_cell_row),
-#                 str(self.series_header_cell_column),
-#             ]
-#         )
-
-
-# @dataclass
-# class Series:
-#     series_id: SeriesId
-#     worksheet: Worksheet
-#     series_header: str
-#     formulas: List[str]
-#     values: List[Union[int, str, float, bool]]
-#     header_location: HeaderLocation
-#     series_starting_cell: Cell
-#     series_length: int
-#     series_data_type: SeriesDataType
 
 
 class SeriesExtractor:
 
     @staticmethod
     def build_series(
-        workbook_data,
-        sheet,
-        header,
-        header_location,
-        start_row_or_column,
-        end_row_or_column,
-        index,
-        orientation,
-    ):
+        workbook_data: WorkbookData,
+        sheet: Worksheet,
+        header: str,
+        header_location: HeaderLocation,
+        start_row_or_column: int,
+        end_row_or_column: int,
+        index: int,
+        orientation: str,
+    ) -> Series:
         start_cell_row = start_row_or_column + 1 if orientation == "top" else index
         start_cell_column = index if orientation == "top" else start_row_or_column + 1
 
@@ -81,7 +43,7 @@ class SeriesExtractor:
 
         series_header_cell_row, series_header_cell_column = (
             SeriesExtractor.calculate_header_cell(
-                start_cell_column, start_cell_row, header_location
+                start_cell_row, start_cell_column, header_location
             )
         )
 
@@ -108,7 +70,6 @@ class SeriesExtractor:
             series_starting_cell=Cell(
                 row=start_cell_row,
                 column=start_cell_column,
-                coordinate=f"{get_column_letter(start_cell_column)}{start_cell_row}",
             ),
             series_length=end_row_or_column - start_row_or_column,
             series_data_type=series_data_type,
@@ -116,15 +77,15 @@ class SeriesExtractor:
 
     @staticmethod
     def handle_series(
-        workbook_data,
-        sheet,
-        header_values,
-        start_column,
-        end_column,
-        start_row,
-        end_row,
-        header_location,
-    ):
+        workbook_data: WorkbookData,
+        sheet: Worksheet,
+        header_values: List[str],
+        start_column: int,
+        end_column: int,
+        start_row: int,
+        end_row: int,
+        header_location: HeaderLocation,
+    ) -> Dict[str, Series]:
         orientation = "top" if header_location == HeaderLocation.TOP else "left"
         series_data = {}
         for index, header in enumerate(
@@ -149,7 +110,9 @@ class SeriesExtractor:
         return series_data
 
     @staticmethod
-    def extract_table_details(extracted_tables, workbook_data):
+    def extract_table_details(
+        extracted_tables: Dict[Worksheet, List[Table]], workbook_data: WorkbookData
+    ):
         tables_data = {}
         for sheet, tables in extracted_tables.items():
             sheet_data = {}
@@ -170,7 +133,9 @@ class SeriesExtractor:
 
     @staticmethod
     def calculate_header_cell(
-        series_starting_cell_column, series_starting_cell_row, header_location
+        series_starting_cell_row: int,
+        series_starting_cell_column: int,
+        header_location: HeaderLocation,
     ):
         return (
             (series_starting_cell_row - 1, series_starting_cell_column)
@@ -180,18 +145,18 @@ class SeriesExtractor:
 
     @staticmethod
     def extract_series(
-        extracted_tables,
-        workbook_data,
-    ):
+        extracted_tables: Dict[Worksheet, List[Table]],
+        workbook_data: WorkbookData,
+    ) -> Dict[str, List[Series]]:
         detailed_series = SeriesExtractor.extract_table_details(
             extracted_tables, workbook_data
         )
 
         series_collection = {}
 
-        for worksheet_obj, table_data in detailed_series.items():
-            series_collection[worksheet_obj.sheet_name] = []
+        for worksheet, table_data in detailed_series.items():
+            series_collection[worksheet.sheet_name] = []
             for _, single_series in table_data.items():
-                series_collection[worksheet_obj.sheet_name].append(single_series)
+                series_collection[worksheet.sheet_name].append(single_series)
 
         return series_collection

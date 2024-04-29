@@ -210,10 +210,10 @@ class SeriesExtractor:
             extracted_tables, workbook_data
         )
 
-        series = {}
+        series_collection = {}
 
         for worksheet, table_data in series_data.items():
-            series[worksheet.sheet_name] = []
+            series_collection[worksheet.sheet_name] = []
             for _, series_data in table_data.items():
                 header_cell_row, header_cell_column = (
                     SeriesExtractor.calculate_header_cell(series_data)
@@ -238,6 +238,6 @@ class SeriesExtractor:
                     series_length=int(series_data["series_length"]),
                     series_data_type=SeriesDataType(series_data["data_type"]),
                 )
-                series[worksheet.sheet_name].append(series_obj)
+                series_collection[worksheet.sheet_name].append(series_obj)
 
-        return series
+        return series_collection

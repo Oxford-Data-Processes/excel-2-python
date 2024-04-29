@@ -16,7 +16,7 @@ class SeriesExtractor:
 
     @staticmethod
     def build_series_data_top(
-        data, sheet, header, header_location, start_row, end_row, col_index
+        workbook_data, sheet, header, header_location, start_row, end_row, col_index
     ):
         series_data = {
             "series_header": header,
@@ -26,8 +26,9 @@ class SeriesExtractor:
             "series_starting_cell": {"row": start_row + 1, "column": col_index},
             "series_length": f"{end_row - start_row}",
         }
+        sheet_data = workbook_data.get_sheet_data(sheet.sheet_name)
         for row in range(start_row + 1, start_row + 3):
-            cell = data[sheet.sheet_name][f"{get_column_letter(col_index)}{row}"]
+            cell = sheet_data[f"{get_column_letter(col_index)}{row}"]
             series_data["row_formulas"].append(cell.formula)
             series_data["row_values"].append(cell.value)
 
@@ -38,7 +39,13 @@ class SeriesExtractor:
 
     @staticmethod
     def build_series_data_left(
-        data, sheet, header, header_location, start_column, end_column, row_index
+        workbook_data,
+        sheet,
+        header,
+        header_location,
+        start_column,
+        end_column,
+        row_index,
     ):
         series_data = {
             "series_header": header,
@@ -48,8 +55,9 @@ class SeriesExtractor:
             "series_starting_cell": {"row": row_index, "column": start_column + 1},
             "series_length": f"{end_column - start_column}",
         }
+        sheet_data = workbook_data.get_sheet_data(sheet.sheet_name)
         for col_offset in range(1, 3):
-            cell = data[sheet.sheet_name][
+            cell = sheet_data[
                 f"{get_column_letter(start_column + col_offset)}{row_index}"
             ]
             series_data["row_formulas"].append(cell.formula)

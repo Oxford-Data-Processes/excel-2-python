@@ -11,6 +11,21 @@ from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union, Any
 import openpyxl
 
+from dataclasses import dataclass, field
+
+
+@dataclass
+class WorkbookData:
+    data: Dict[str, Dict[str, Cell]] = field(default_factory=dict)
+
+    def add_sheet_data(self, sheet_name: str, sheet_data: Dict[str, Cell]):
+        """Add or update the data for a specific worksheet."""
+        self.data[sheet_name] = sheet_data
+
+    def get_sheet_data(self, sheet_name: str) -> Optional[Dict[str, Cell]]:
+        """Retrieve the data for a specific worksheet."""
+        return self.data.get(sheet_name)
+
 
 class CellOperations:
 
@@ -101,17 +116,15 @@ class TableLocator:
         return tables
 
     @staticmethod
-    def _locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> List[LocatedTables]:
-        """Locate tables in the given data."""
+    def _locate_data_tables(workbook_data: WorkbookData) -> List[LocatedTables]:
+        """Locate tables in the given data stored in WorkbookData."""
         all_located_tables = []
-
-        for sheet_name, sheet_data in data.items():
+        for sheet_name, sheet_data in workbook_data.data.items():
             tables = TableLocator._find_table_boundaries(sheet_name, sheet_data)
             located_tables = LocatedTables(
                 worksheet=Worksheet(sheet_name=sheet_name), tables=tables
             )
             all_located_tables.append(located_tables)
-
         return all_located_tables
 
 
@@ -142,6 +155,7 @@ class DataExtractor:
     def _get_first_column_values(
         range_input: CellRange, data_object: Dict[str, Cell]
     ) -> List[Union[int, str, float, bool]]:
+        """Get values from the first column of a range."""
         start_cell = range_input.start_cell
         end_cell = range_input.end_cell
 
@@ -156,14 +170,18 @@ class DataExtractor:
         return first_column_values
 
     @staticmethod
-    def _get_header_location_and_values(data: Dict[str, Any]) -> List[LocatedTables]:
-
-        located_tables = TableLocator._locate_data_tables(data)
-
+    def _get_header_location_and_values(
+        workbook_data: WorkbookData,
+    ) -> List[LocatedTables]:
+        """Get header location and values for the located tables."""
+        located_tables = TableLocator._locate_data_tables(workbook_data)
         for located_table in located_tables:
+            sheet_data = workbook_data.get_sheet_data(
+                located_table.worksheet.sheet_name
+            )
             for table in located_table.tables:
                 boolean, header_values = DataExtractor._are_first_row_values_strings(
-                    table.range, data[located_table.worksheet.sheet_name]
+                    table.range, sheet_data
                 )
                 if boolean:
                     table.header_location = HeaderLocation.TOP
@@ -171,9 +189,8 @@ class DataExtractor:
                 else:
                     table.header_location = HeaderLocation.LEFT
                     table.header_values = DataExtractor._get_first_column_values(
-                        table.range, data[located_table.worksheet.sheet_name]
+                        table.range, sheet_data
                     )
-
         return located_tables
 
 
@@ -182,20 +199,18 @@ class TableExtractor:
     @staticmethod
     def extract_tables(
         excel_file: ExcelFile,
-    ) -> Dict[Worksheet, List[Table]]:
-        data = {}
+    ) -> Tuple[Dict[Worksheet, List[Table]], WorkbookData]:
+        """Extract tables from the given Excel file and return as a dictionary of tables and the workbook cell data."""
+        workbook_data = WorkbookData()
         for ws_values, ws_formulas in zip(
             excel_file.workbook_with_values.worksheets,
             excel_file.workbook_with_formulas.worksheets,
         ):
-            worksheet = Worksheet(
-                sheet_name=ws_values.title,
-                worksheet=ws_values,
-            )
+            worksheet = Worksheet(sheet_name=ws_values.title, worksheet=ws_values)
             sheet_data = TableExtractor._extract_sheet_data(ws_values, ws_formulas)
-            data[worksheet.sheet_name] = sheet_data
+            workbook_data.add_sheet_data(worksheet.sheet_name, sheet_data)
 
-        located_tables = DataExtractor._get_header_location_and_values(data)
+        located_tables = DataExtractor._get_header_location_and_values(workbook_data)
 
         extracted_tables = {}
         for located_table in located_tables:
@@ -203,13 +218,14 @@ class TableExtractor:
                 Worksheet(sheet_name=located_table.worksheet.sheet_name)
             ] = located_table.tables
 
-        return extracted_tables, data
+        return extracted_tables, workbook_data
 
     @staticmethod
     def _extract_cell_data(
         cell_with_value: openpyxl.cell.cell.Cell,
         cell_with_formula: openpyxl.cell.cell.Cell,
     ) -> Cell:
+        """Extract data from a cell and return as a Cell object."""
         formula = (
             cell_with_formula.value
             if isinstance(cell_with_formula.value, str)

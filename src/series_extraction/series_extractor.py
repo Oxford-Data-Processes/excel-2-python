@@ -15,20 +15,36 @@ from typing import Dict, List
 class SeriesExtractor:
 
     @staticmethod
-    def build_series_data_top(
-        workbook_data, sheet, header, header_location, start_row, end_row, col_index
+    def build_series_data(
+        workbook_data,
+        sheet,
+        header,
+        header_location,
+        start_row_or_column,
+        end_row_or_column,
+        index,
+        orientation: str,
     ):
         series_data = {
             "series_header": header,
             "row_formulas": [],
             "row_values": [],
             "header_location": header_location,
-            "series_starting_cell": {"row": start_row + 1, "column": col_index},
-            "series_length": f"{end_row - start_row}",
+            "series_starting_cell": (
+                {"row": start_row_or_column + 1, "column": index}
+                if orientation == "top"
+                else {"row": index, "column": start_row_or_column + 1}
+            ),
+            "series_length": f"{end_row_or_column - start_row_or_column}",
         }
         sheet_data = workbook_data.get_sheet_data(sheet.sheet_name)
-        for row in range(start_row + 1, start_row + 3):
-            cell = sheet_data[f"{get_column_letter(col_index)}{row}"]
+        for offset in range(1, 3):
+            cell_key = (
+                f"{get_column_letter(index)}{start_row_or_column + offset}"
+                if orientation == "top"
+                else f"{get_column_letter(start_row_or_column + offset)}{index}"
+            )
+            cell = sheet_data[cell_key]
             series_data["row_formulas"].append(cell.formula)
             series_data["row_values"].append(cell.value)
 
@@ -36,6 +52,21 @@ class SeriesExtractor:
             series_data["data_type"] = type(series_data["row_values"][0]).__name__
 
         return series_data
+
+    @staticmethod
+    def build_series_data_top(
+        workbook_data, sheet, header, header_location, start_row, end_row, col_index
+    ):
+        return SeriesExtractor.build_series_data(
+            workbook_data,
+            sheet,
+            header,
+            header_location,
+            start_row,
+            end_row,
+            col_index,
+            orientation="top",
+        )
 
     @staticmethod
     def build_series_data_left(
@@ -47,26 +78,16 @@ class SeriesExtractor:
         end_column,
         row_index,
     ):
-        series_data = {
-            "series_header": header,
-            "row_formulas": [],
-            "row_values": [],
-            "header_location": header_location,
-            "series_starting_cell": {"row": row_index, "column": start_column + 1},
-            "series_length": f"{end_column - start_column}",
-        }
-        sheet_data = workbook_data.get_sheet_data(sheet.sheet_name)
-        for col_offset in range(1, 3):
-            cell = sheet_data[
-                f"{get_column_letter(start_column + col_offset)}{row_index}"
-            ]
-            series_data["row_formulas"].append(cell.formula)
-            series_data["row_values"].append(cell.value)
-
-        if series_data["row_values"]:
-            series_data["data_type"] = type(series_data["row_values"][0]).__name__
-
-        return series_data
+        return SeriesExtractor.build_series_data(
+            workbook_data,
+            sheet,
+            header,
+            header_location,
+            start_column,
+            end_column,
+            row_index,
+            orientation="left",
+        )
 
     @staticmethod
     def extract_table_details(extracted_tables, data):

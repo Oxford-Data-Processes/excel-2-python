@@ -232,39 +232,41 @@ class SeriesExtractor:
 
     @staticmethod
     def extract_series(
-        extracted_tables: Dict[Worksheet, List[Table]],
-        workbook_data: dict,
-    ) -> Dict[str, List[Series]]:
-        series = SeriesExtractor.extract_table_details(extracted_tables, workbook_data)
+        extracted_tables,
+        workbook_data,
+    ):
+        detailed_series = SeriesExtractor.extract_table_details(
+            extracted_tables, workbook_data
+        )
 
         series_collection = {}
 
-        for worksheet, table_data in series.items():
-            series_collection[worksheet.sheet_name] = []
-            for _, series in table_data.items():
+        for worksheet_obj, table_data in detailed_series.items():
+            series_collection[worksheet_obj.sheet_name] = []
+            for _, single_series in table_data.items():
                 header_cell_row, header_cell_column = (
-                    SeriesExtractor.calculate_header_cell(series)
+                    SeriesExtractor.calculate_header_cell(single_series)
                 )
-                series_obj = Series(
+                series_instance = Series(
                     series_id=SeriesId(
-                        sheet_name=worksheet.sheet_name,
-                        series_header=series.series_header,
+                        sheet_name=single_series.worksheet.sheet_name,
+                        series_header=single_series.series_header,
                         series_header_cell_row=header_cell_row,
                         series_header_cell_column=header_cell_column,
                     ),
-                    worksheet=worksheet,
-                    series_header=series.series_header,
-                    formulas=series.formulas,
-                    values=series.values,
-                    header_location=series.header_location,
+                    worksheet=worksheet_obj,
+                    series_header=single_series.series_header,
+                    formulas=single_series.formulas,
+                    values=single_series.values,
+                    header_location=single_series.header_location,
                     series_starting_cell=Cell(
-                        column=series.series_starting_cell.column,
-                        row=series.series_starting_cell.row,
-                        coordinate=f"{get_column_letter(series.series_starting_cell.column)}{series.series_starting_cell.row}",
+                        column=single_series.series_starting_cell.column,
+                        row=single_series.series_starting_cell.row,
+                        coordinate=f"{get_column_letter(single_series.series_starting_cell.column)}{single_series.series_starting_cell.row}",
                     ),
-                    series_length=int(series.series_length),
-                    series_data_type=SeriesDataType(series.series_data_type),
+                    series_length=int(single_series.series_length),
+                    series_data_type=SeriesDataType(single_series.series_data_type),
                 )
-                series_collection[worksheet.sheet_name].append(series_obj)
+                series_collection[worksheet_obj.sheet_name].append(series_instance)
 
         return series_collection

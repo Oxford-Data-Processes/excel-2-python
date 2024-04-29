@@ -79,15 +79,17 @@ class SeriesExtractor:
             row_formulas.append(cell.formula if cell else None)
             row_values.append(cell.value if cell else None)
 
+        series_header_cell_row, series_header_cell_column = (
+            SeriesExtractor.calculate_header_cell(
+                start_cell_row, start_cell_column, header_location
+            )
+        )
+
         series_id = SeriesId(
             sheet_name=sheet.sheet_name,
             series_header=header,
-            series_header_cell_row=(
-                start_row_or_column if orientation == "top" else index
-            ),
-            series_header_cell_column=(
-                index if orientation == "top" else start_row_or_column + 1
-            ),
+            series_header_cell_row=series_header_cell_row,
+            series_header_cell_column=series_header_cell_column,
         )
 
         series_data_type = (
@@ -167,11 +169,13 @@ class SeriesExtractor:
         return tables_data
 
     @staticmethod
-    def calculate_header_cell(column, row, header_location):
+    def calculate_header_cell(
+        series_starting_cell_column, series_starting_cell_row, header_location
+    ):
         return (
-            (row - 1, column)
+            (series_starting_cell_row - 1, series_starting_cell_column)
             if header_location == HeaderLocation.TOP
-            else (row, column - 1)
+            else (series_starting_cell_row, series_starting_cell_column - 1)
         )
 
     @staticmethod
@@ -188,21 +192,23 @@ class SeriesExtractor:
         for worksheet_obj, table_data in detailed_series.items():
             series_collection[worksheet_obj.sheet_name] = []
             for _, single_series in table_data.items():
-                column, row = (
+                series_starting_cell_column, series_starting_cell_row = (
                     single_series.series_starting_cell.column,
                     single_series.series_starting_cell.row,
                 )
-                header_cell_row, header_cell_column = (
+                series_header_cell_row, series_header_cell_column = (
                     SeriesExtractor.calculate_header_cell(
-                        column, row, single_series.header_location
+                        series_starting_cell_column,
+                        series_starting_cell_row,
+                        single_series.header_location,
                     )
                 )
                 series_instance = Series(
                     series_id=SeriesId(
                         sheet_name=single_series.worksheet.sheet_name,
                         series_header=single_series.series_header,
-                        series_header_cell_row=header_cell_row,
-                        series_header_cell_column=header_cell_column,
+                        series_header_cell_row=series_header_cell_row,
+                        series_header_cell_column=series_header_cell_column,
                     ),
                     worksheet=worksheet_obj,
                     series_header=single_series.series_header,

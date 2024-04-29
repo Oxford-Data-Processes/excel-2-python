@@ -63,19 +63,14 @@ class SeriesExtractor:
         end_row_or_column,
         index,
         orientation: str,
-    ):
-        series = {
-            "series_header": header,
-            "formulas": [],
-            "values": [],
-            "header_location": header_location,
-            "series_starting_cell": (
-                {"row": start_row_or_column + 1, "column": index}
-                if orientation == "top"
-                else {"row": index, "column": start_row_or_column + 1}
-            ),
-            "series_length": f"{end_row_or_column - start_row_or_column}",
-        }
+    ) -> Series:
+        # Calculate the starting cell coordinates based on orientation
+        start_cell_row = start_row_or_column + 1 if orientation == "top" else index
+        start_cell_column = index if orientation == "top" else start_row_or_column + 1
+
+        # Gather formulas and values from the workbook
+        row_formulas = []
+        row_values = []
         sheet_data = workbook_data.get_sheet_data(sheet.sheet_name)
         for offset in range(1, 3):
             cell_key = (
@@ -83,14 +78,48 @@ class SeriesExtractor:
                 if orientation == "top"
                 else f"{get_column_letter(start_row_or_column + offset)}{index}"
             )
-            cell = sheet_data[cell_key]
-            series["formulas"].append(cell.formula)
-            series["values"].append(cell.value)
+            cell = sheet_data.get(cell_key)
+            row_formulas.append(cell.formula if cell else None)
+            row_values.append(cell.value if cell else None)
 
-        if series["values"]:
-            series["data_type"] = type(series["values"][0]).__name__
+        # Create the SeriesId for the Series
+        series_id = SeriesId(
+            sheet_name=sheet.sheet_name,
+            series_header=header,
+            series_header_cell_row=(
+                start_row_or_column if orientation == "top" else index
+            ),
+            series_header_cell_column=(
+                index if orientation == "top" else start_row_or_column + 1
+            ),
+        )
 
-        return series
+        # Determine the data type based on the type of the first value in row_values
+        series_data_type = (
+            SeriesDataType(type(row_values[0]).__name__)
+            if row_values
+            else SeriesDataType.STR
+        )
+
+        # Define the starting cell for the series
+        series_starting_cell = Cell(
+            row=start_cell_row,
+            column=start_cell_column,
+            coordinate=f"{get_column_letter(start_cell_column)}{start_cell_row}",
+        )
+
+        # Create and return the Series dataclass instance
+        return Series(
+            series_id=series_id,
+            worksheet=sheet,
+            series_header=header,
+            formulas=row_formulas,
+            values=row_values,
+            header_location=header_location,
+            series_starting_cell=series_starting_cell,
+            series_length=end_row_or_column - start_row_or_column,
+            series_data_type=series_data_type,
+        )
 
     @staticmethod
     def handle_top(
@@ -189,13 +218,13 @@ class SeriesExtractor:
 
     @staticmethod
     def calculate_header_cell(series):
-        series_starting_cell_column = series["series_starting_cell"]["column"]
-        series_starting_cell_row = series["series_starting_cell"]["row"]
+        series_starting_cell_column = series.series_starting_cell.column
+        series_starting_cell_row = series.series_starting_cell.row
 
-        if series["header_location"] == HeaderLocation.TOP:
+        if series.header_location == HeaderLocation.TOP:
             header_cell_row = series_starting_cell_row - 1
             header_cell_column = series_starting_cell_column
-        elif series["header_location"] == HeaderLocation.LEFT:
+        elif series.header_location == HeaderLocation.LEFT:
             header_cell_row = series_starting_cell_row
             header_cell_column = series_starting_cell_column - 1
 
@@ -206,9 +235,7 @@ class SeriesExtractor:
         extracted_tables: Dict[Worksheet, List[Table]],
         workbook_data: dict,
     ) -> Dict[str, List[Series]]:
-        series = SeriesExtractor.extract_table_details(
-            extracted_tables, workbook_data
-        )
+        series = SeriesExtractor.extract_table_details(extracted_tables, workbook_data)
 
         series_collection = {}
 
@@ -221,22 +248,22 @@ class SeriesExtractor:
                 series_obj = Series(
                     series_id=SeriesId(
                         sheet_name=worksheet.sheet_name,
-                        series_header=series["series_header"],
+                        series_header=series.series_header,
                         series_header_cell_row=header_cell_row,
                         series_header_cell_column=header_cell_column,
                     ),
                     worksheet=worksheet,
-                    series_header=series["series_header"],
-                    formulas=series["formulas"],
-                    values=series["values"],
-                    header_location=series["header_location"],
+                    series_header=series.series_header,
+                    formulas=series.formulas,
+                    values=series.values,
+                    header_location=series.header_location,
                     series_starting_cell=Cell(
-                        column=series["series_starting_cell"]["column"],
-                        row=series["series_starting_cell"]["row"],
-                        coordinate=f"{get_column_letter(series['series_starting_cell']['column'])}{series['series_starting_cell']['row']}",
+                        column=series.series_starting_cell.column,
+                        row=series.series_starting_cell.row,
+                        coordinate=f"{get_column_letter(series.series_starting_cell.column)}{series.series_starting_cell.row}",
                     ),
-                    series_length=int(series["series_length"]),
-                    series_data_type=SeriesDataType(series["data_type"]),
+                    series_length=int(series.series_length),
+                    series_data_type=SeriesDataType(series.series_data_type),
                 )
                 series_collection[worksheet.sheet_name].append(series_obj)
 

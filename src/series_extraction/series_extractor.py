@@ -1,15 +1,53 @@
 from openpyxl.utils import get_column_letter
 from objects import (
     HeaderLocation,
-    SeriesId,
     Worksheet,
     Table,
-    Series,
     Cell,
-    SeriesDataType,
 )
 
-from typing import Dict, List
+from typing import Dict, List, Union
+from enum import Enum
+from dataclasses import dataclass
+
+
+class SeriesDataType(Enum):
+    INT = "int"
+    STR = "str"
+    FLOAT = "float"
+    BOOL = "bool"
+    TIME = "time"
+
+
+@dataclass(frozen=True)
+class SeriesId:
+    sheet_name: str
+    series_header: str
+    series_header_cell_row: int
+    series_header_cell_column: int
+
+    def __str__(self):
+        return "|".join(
+            [
+                self.sheet_name,
+                self.series_header,
+                str(self.series_header_cell_row),
+                str(self.series_header_cell_column),
+            ]
+        )
+
+
+@dataclass
+class Series:
+    series_id: SeriesId
+    worksheet: Worksheet
+    series_header: str
+    formulas: List[str]
+    values: List[Union[int, str, float, bool]]
+    header_location: HeaderLocation
+    series_starting_cell: Cell
+    series_length: int
+    series_data_type: SeriesDataType
 
 
 class SeriesExtractor:

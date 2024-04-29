@@ -202,34 +202,13 @@ class SeriesExtractor:
         return header_cell_row, header_cell_column
 
     @staticmethod
-    def create_series(worksheet, series_data, header_cell_row, header_cell_column):
-        return Series(
-            series_id=SeriesId(
-                sheet_name=worksheet.sheet_name,
-                series_header=series_data["series_header"],
-                series_header_cell_row=header_cell_row,
-                series_header_cell_column=header_cell_column,
-            ),
-            worksheet=worksheet,
-            series_header=series_data["series_header"],
-            formulas=series_data["row_formulas"],
-            values=series_data["row_values"],
-            header_location=series_data["header_location"],
-            series_starting_cell=Cell(
-                column=series_data["series_starting_cell"]["column"],
-                row=series_data["series_starting_cell"]["row"],
-                coordinate=f"{get_column_letter(series_data['series_starting_cell']['column'])}{series_data['series_starting_cell']['row']}",
-            ),
-            series_length=int(series_data["series_length"]),
-            series_data_type=SeriesDataType(series_data["data_type"]),
-        )
-
-    @staticmethod
     def extract_series(
         extracted_tables: Dict[Worksheet, List[Table]],
         workbook_data: dict,
     ) -> Dict[str, List[Series]]:
-        series_data = SeriesExtractor.extract_table_details(extracted_tables, workbook_data)
+        series_data = SeriesExtractor.extract_table_details(
+            extracted_tables, workbook_data
+        )
 
         series = {}
 
@@ -239,8 +218,25 @@ class SeriesExtractor:
                 header_cell_row, header_cell_column = (
                     SeriesExtractor.calculate_header_cell(series_data)
                 )
-                series_obj = SeriesExtractor.create_series(
-                    worksheet, series_data, header_cell_row, header_cell_column
+                series_obj = Series(
+                    series_id=SeriesId(
+                        sheet_name=worksheet.sheet_name,
+                        series_header=series_data["series_header"],
+                        series_header_cell_row=header_cell_row,
+                        series_header_cell_column=header_cell_column,
+                    ),
+                    worksheet=worksheet,
+                    series_header=series_data["series_header"],
+                    formulas=series_data["row_formulas"],
+                    values=series_data["row_values"],
+                    header_location=series_data["header_location"],
+                    series_starting_cell=Cell(
+                        column=series_data["series_starting_cell"]["column"],
+                        row=series_data["series_starting_cell"]["row"],
+                        coordinate=f"{get_column_letter(series_data['series_starting_cell']['column'])}{series_data['series_starting_cell']['row']}",
+                    ),
+                    series_length=int(series_data["series_length"]),
+                    series_data_type=SeriesDataType(series_data["data_type"]),
                 )
                 series[worksheet.sheet_name].append(series_obj)
 

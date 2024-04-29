@@ -6,25 +6,11 @@ from objects import (
     HeaderLocation,
     Cell,
     CellRange,
+    WorkbookData
 )
 from excel_utils import ExcelUtils
-from typing import Dict, List, Set, Tuple, Optional, Union, Any
+from typing import Dict, List, Set, Tuple, Optional, Union
 import openpyxl
-
-from dataclasses import dataclass, field
-
-
-@dataclass
-class WorkbookData:
-    data: Dict[str, Dict[str, Cell]] = field(default_factory=dict)
-
-    def add_sheet_data(self, sheet_name: str, sheet_data: Dict[str, Cell]):
-        """Add or update the data for a specific worksheet."""
-        self.data[sheet_name] = sheet_data
-
-    def get_sheet_data(self, sheet_name: str) -> Optional[Dict[str, Cell]]:
-        """Retrieve the data for a specific worksheet."""
-        return self.data.get(sheet_name)
 
 
 class CellOperations:
@@ -43,7 +29,9 @@ class CellOperations:
 class TableLocator:
 
     @staticmethod
-    def _process_frontier(frontier: Set[Cell], non_empty_cells: Set[Cell]) -> Set[Cell]:
+    def _process_adjacent_cells(
+        frontier: Set[Cell], non_empty_cells: Set[Cell]
+    ) -> Set[Cell]:
         """Identify and process all adjacent cells for the given frontier."""
         new_frontier = set()
         for frontier_cell in frontier:
@@ -57,7 +45,7 @@ class TableLocator:
         return new_frontier
 
     @staticmethod
-    def _update_cluster(
+    def _update_cell_cluster(
         cluster: Set[Cell], new_frontier: Set[Cell]
     ) -> Tuple[Set[Cell], int, int, int, int]:
         """Update the cluster with new cells and adjust the boundaries."""
@@ -69,15 +57,17 @@ class TableLocator:
         return cluster, min_row, max_row, min_col, max_col
 
     @staticmethod
-    def _expand_cluster(
+    def _expand_cell_cluster(
         frontier: Set[Cell], non_empty_cells: Set[Cell]
     ) -> Tuple[Set[Cell], int, int, int, int]:
         """Expand the cluster from the frontier cells, updating boundaries."""
         cluster = set(frontier)
         while frontier:
-            new_frontier = TableLocator._process_frontier(frontier, non_empty_cells)
-            cluster, min_row, max_row, min_col, max_col = TableLocator._update_cluster(
-                cluster, new_frontier
+            new_frontier = TableLocator._process_adjacent_cells(
+                frontier, non_empty_cells
+            )
+            cluster, min_row, max_row, min_col, max_col = (
+                TableLocator._update_cell_cluster(cluster, new_frontier)
             )
             frontier = new_frontier
 
@@ -93,8 +83,8 @@ class TableLocator:
 
         while non_empty_cells:
             initial_cell = non_empty_cells.pop()
-            cluster, min_row, max_row, min_col, max_col = TableLocator._expand_cluster(
-                {initial_cell}, non_empty_cells
+            cluster, min_row, max_row, min_col, max_col = (
+                TableLocator._expand_cell_cluster({initial_cell}, non_empty_cells)
             )
             table = Table(
                 name=f"{sheet_name}_{len(tables) + 1}",

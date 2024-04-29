@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Dict
 from enum import Enum
 from excel_utils import ExcelUtils
 
@@ -20,6 +20,7 @@ class Worksheet:
     worksheet: Optional[openpyxl.worksheet.worksheet.Worksheet] = None
 
 
+
 @dataclass(frozen=True)
 class Cell:
     column: int
@@ -38,6 +39,17 @@ class Cell:
             return f"{ExcelUtils.get_column_letter_from_number(self.column)}{self.row}"
         return None
 
+@dataclass
+class WorkbookData:
+    data: Dict[str, Dict[str, Cell]] = field(default_factory=dict)
+
+    def add_sheet_data(self, sheet_name: str, sheet_data: Dict[str, Cell]):
+        """Add or update the data for a specific worksheet."""
+        self.data[sheet_name] = sheet_data
+
+    def get_sheet_data(self, sheet_name: str) -> Optional[Dict[str, Cell]]:
+        """Retrieve the data for a specific worksheet."""
+        return self.data.get(sheet_name)
 
 @dataclass
 class CellRange:

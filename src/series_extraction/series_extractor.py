@@ -10,7 +10,7 @@ from objects import (
 )
 from openpyxl.utils import get_column_letter
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 class SeriesExtractor:
@@ -26,6 +26,7 @@ class SeriesExtractor:
         index: int,
         orientation: str,
     ) -> Series:
+        """Build a series object."""
         start_cell_row = start_row_or_column + 1 if orientation == "top" else index
         start_cell_column = index if orientation == "top" else start_row_or_column + 1
 
@@ -86,6 +87,7 @@ class SeriesExtractor:
         end_row: int,
         header_location: HeaderLocation,
     ) -> Dict[str, Series]:
+        """Handle the series extraction."""
         orientation = "top" if header_location == HeaderLocation.TOP else "left"
         series_data = {}
         for index, header in enumerate(
@@ -112,7 +114,8 @@ class SeriesExtractor:
     @staticmethod
     def extract_table_details(
         extracted_tables: Dict[Worksheet, List[Table]], workbook_data: WorkbookData
-    ):
+    ) -> Dict[Worksheet, Dict[str, Series]]:
+        """Extract series from the tables."""
         tables_data = {}
         for sheet, tables in extracted_tables.items():
             sheet_data = {}
@@ -136,7 +139,8 @@ class SeriesExtractor:
         series_starting_cell_row: int,
         series_starting_cell_column: int,
         header_location: HeaderLocation,
-    ):
+    ) -> Tuple[int, int]:
+        """Calculate the header cell for the series."""
         return (
             (series_starting_cell_row - 1, series_starting_cell_column)
             if header_location == HeaderLocation.TOP
@@ -148,6 +152,7 @@ class SeriesExtractor:
         extracted_tables: Dict[Worksheet, List[Table]],
         workbook_data: WorkbookData,
     ) -> Dict[str, List[Series]]:
+        """Extract series from the tables."""
         detailed_series = SeriesExtractor.extract_table_details(
             extracted_tables, workbook_data
         )

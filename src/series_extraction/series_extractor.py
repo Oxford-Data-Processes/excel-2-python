@@ -81,9 +81,19 @@ class SeriesExtractor:
 
         series_header_cell_row, series_header_cell_column = (
             SeriesExtractor.calculate_header_cell(
-                start_cell_row, start_cell_column, header_location
+                start_cell_column, start_cell_row, header_location
             )
         )
+        print("BUILD_SERIES")
+        print("start_cell_row")
+        print(start_cell_row)
+        print("start_cell_column")
+        print(start_cell_column)
+
+        print("series_header_cell_row")
+        print(series_header_cell_row)
+        print("series_header_cell_column")
+        print(series_header_cell_column)
 
         series_id = SeriesId(
             sheet_name=sheet.sheet_name,
@@ -203,12 +213,27 @@ class SeriesExtractor:
                         single_series.header_location,
                     )
                 )
+
+                print("EXTRACT_SERIES")
+                print("series_starting_cell_column")
+                print(series_starting_cell_column)
+                print("series_starting_cell_row")
+                print(series_starting_cell_row)
+                print("series_header_cell_row")
+                print(series_header_cell_row)
+                print("series_header_cell_column")
+                print(series_header_cell_column)
+                print("series_id_series_header_cell_row")
+                print(single_series.series_id.series_header_cell_row)
+                print("series_id_series_header_cell_column")
+                print(single_series.series_id.series_header_cell_column)
+
                 series_instance = Series(
                     series_id=SeriesId(
                         sheet_name=single_series.worksheet.sheet_name,
                         series_header=single_series.series_header,
-                        series_header_cell_row=series_header_cell_row,
-                        series_header_cell_column=series_header_cell_column,
+                        series_header_cell_row=single_series.series_id.series_header_cell_row,
+                        series_header_cell_column=single_series.series_id.series_header_cell_column,
                     ),
                     worksheet=worksheet_obj,
                     series_header=single_series.series_header,

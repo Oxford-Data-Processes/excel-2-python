@@ -9,9 +9,7 @@ from objects import (
     SeriesDataType,
 )
 
-from typing import Dict, List, Union
-from enum import Enum
-from dataclasses import dataclass
+from typing import Dict, List
 
 
 # class SeriesDataType(Enum):
@@ -229,9 +227,9 @@ class SeriesExtractor:
     @staticmethod
     def extract_series(
         extracted_tables: Dict[Worksheet, List[Table]],
-        data: dict,
+        workbook_data: dict,
     ) -> Dict[str, List[Series]]:
-        series_data = SeriesExtractor.extract_table_details(extracted_tables, data)
+        series_data = SeriesExtractor.extract_table_details(extracted_tables, workbook_data)
 
         series = {}
 

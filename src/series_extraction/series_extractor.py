@@ -112,7 +112,7 @@ class SeriesExtractor:
                 workbook_data=workbook_data,
                 sheet=sheet,
                 header=header,
-                header_location=header_location.value,
+                header_location=header_location,
                 start_row_or_column=start_row,
                 end_row_or_column=end_row,
                 index=col_index,
@@ -138,7 +138,7 @@ class SeriesExtractor:
                 workbook_data=workbook_data,
                 sheet=sheet,
                 header=header,
-                header_location=header_location.value,
+                header_location=header_location,
                 start_row_or_column=start_column,
                 end_row_or_column=end_column,
                 index=row_index,
@@ -194,10 +194,10 @@ class SeriesExtractor:
         series_starting_cell_column = series_data["series_starting_cell"]["column"]
         series_starting_cell_row = series_data["series_starting_cell"]["row"]
 
-        if series_data["header_location"] == "top":
+        if series_data["header_location"] == HeaderLocation.TOP:
             header_cell_row = series_starting_cell_row - 1
             header_cell_column = series_starting_cell_column
-        elif series_data["header_location"] == "left":
+        elif series_data["header_location"] == HeaderLocation.LEFT:
             header_cell_row = series_starting_cell_row
             header_cell_column = series_starting_cell_column - 1
 
@@ -216,7 +216,7 @@ class SeriesExtractor:
             series_header=series_data["series_header"],
             formulas=series_data["row_formulas"],
             values=series_data["row_values"],
-            header_location=HeaderLocation(series_data["header_location"]),
+            header_location=series_data["header_location"],
             series_starting_cell=Cell(
                 column=series_data["series_starting_cell"]["column"],
                 row=series_data["series_starting_cell"]["row"],

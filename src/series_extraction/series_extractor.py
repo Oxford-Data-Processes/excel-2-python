@@ -149,6 +149,43 @@ class SeriesExtractor:
         return tables_data
 
     @staticmethod
+    def calculate_header_cell(series_data):
+        series_starting_cell_column = series_data["series_starting_cell"]["column"]
+        series_starting_cell_row = series_data["series_starting_cell"]["row"]
+
+        if series_data["header_location"] == "top":
+            header_cell_row = series_starting_cell_row - 1
+            header_cell_column = series_starting_cell_column
+        elif series_data["header_location"] == "left":
+            header_cell_row = series_starting_cell_row
+            header_cell_column = series_starting_cell_column - 1
+
+        return header_cell_row, header_cell_column
+
+    @staticmethod
+    def create_series(worksheet, series_data, header_cell_row, header_cell_column):
+        return Series(
+            series_id=SeriesId(
+                sheet_name=worksheet.sheet_name,
+                series_header=series_data["series_header"],
+                series_header_cell_row=header_cell_row,
+                series_header_cell_column=header_cell_column,
+            ),
+            worksheet=worksheet,
+            series_header=series_data["series_header"],
+            formulas=series_data["row_formulas"],
+            values=series_data["row_values"],
+            header_location=HeaderLocation(series_data["header_location"]),
+            series_starting_cell=Cell(
+                column=series_data["series_starting_cell"]["column"],
+                row=series_data["series_starting_cell"]["row"],
+                coordinate=f"{get_column_letter(series_data['series_starting_cell']['column'])}{series_data['series_starting_cell']['row']}",
+            ),
+            series_length=int(series_data["series_length"]),
+            series_data_type=SeriesDataType(series_data["data_type"]),
+        )
+
+    @staticmethod
     def extract_series(
         extracted_tables: Dict[Worksheet, List[Table]],
         data: dict,
@@ -160,40 +197,12 @@ class SeriesExtractor:
         for worksheet, table_data in series_data.items():
             series[worksheet.sheet_name] = []
             for _, series_data in table_data.items():
-
-                series_starting_cell_column = series_data["series_starting_cell"][
-                    "column"
-                ]
-                series_starting_cell_row = series_data["series_starting_cell"]["row"]
-
-                if series_data["header_location"] == "top":
-                    header_cell_row = series_starting_cell_row - 1
-                    header_cell_column = series_starting_cell_column
-                elif series_data["header_location"] == "left":
-                    header_cell_row = series_starting_cell_row
-                    header_cell_column = series_starting_cell_column - 1
-
-                series[worksheet.sheet_name].append(
-                    Series(
-                        series_id=SeriesId(
-                            sheet_name=worksheet.sheet_name,
-                            series_header=series_data["series_header"],
-                            series_header_cell_row=header_cell_row,
-                            series_header_cell_column=header_cell_column,
-                        ),
-                        worksheet=worksheet,
-                        series_header=series_data["series_header"],
-                        formulas=series_data["row_formulas"],
-                        values=series_data["row_values"],
-                        header_location=HeaderLocation(series_data["header_location"]),
-                        series_starting_cell=Cell(
-                            column=series_starting_cell_column,
-                            row=series_starting_cell_row,
-                            coordinate=f"{get_column_letter(series_data['series_starting_cell']['column'])}{series_data['series_starting_cell']['row']}",
-                        ),
-                        series_length=int(series_data["series_length"]),
-                        series_data_type=SeriesDataType(series_data["data_type"]),
-                    )
+                header_cell_row, header_cell_column = (
+                    SeriesExtractor.calculate_header_cell(series_data)
                 )
+                series_obj = SeriesExtractor.create_series(
+                    worksheet, series_data, header_cell_row, header_cell_column
+                )
+                series[worksheet.sheet_name].append(series_obj)
 
         return series

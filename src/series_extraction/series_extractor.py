@@ -50,7 +50,6 @@ from typing import Dict, List
 #     series_length: int
 #     series_data_type: SeriesDataType
 
-
 class SeriesExtractor:
 
     @staticmethod
@@ -62,15 +61,12 @@ class SeriesExtractor:
         start_row_or_column,
         end_row_or_column,
         index,
-        orientation: str,
-    ) -> Series:
-        # Calculate the starting cell coordinates based on orientation
+        orientation,
+    ):
         start_cell_row = start_row_or_column + 1 if orientation == "top" else index
         start_cell_column = index if orientation == "top" else start_row_or_column + 1
 
-        # Gather formulas and values from the workbook
-        row_formulas = []
-        row_values = []
+        row_formulas, row_values = [], []
         sheet_data = workbook_data.get_sheet_data(sheet.sheet_name)
         for offset in range(1, 3):
             cell_key = (
@@ -82,7 +78,6 @@ class SeriesExtractor:
             row_formulas.append(cell.formula if cell else None)
             row_values.append(cell.value if cell else None)
 
-        # Create the SeriesId for the Series
         series_id = SeriesId(
             sheet_name=sheet.sheet_name,
             series_header=header,
@@ -94,21 +89,12 @@ class SeriesExtractor:
             ),
         )
 
-        # Determine the data type based on the type of the first value in row_values
         series_data_type = (
             SeriesDataType(type(row_values[0]).__name__)
             if row_values
             else SeriesDataType.STR
         )
 
-        # Define the starting cell for the series
-        series_starting_cell = Cell(
-            row=start_cell_row,
-            column=start_cell_column,
-            coordinate=f"{get_column_letter(start_cell_column)}{start_cell_row}",
-        )
-
-        # Create and return the Series dataclass instance
         return Series(
             series_id=series_id,
             worksheet=sheet,
@@ -116,119 +102,80 @@ class SeriesExtractor:
             formulas=row_formulas,
             values=row_values,
             header_location=header_location,
-            series_starting_cell=series_starting_cell,
+            series_starting_cell=Cell(
+                row=start_cell_row,
+                column=start_cell_column,
+                coordinate=f"{get_column_letter(start_cell_column)}{start_cell_row}",
+            ),
             series_length=end_row_or_column - start_row_or_column,
             series_data_type=series_data_type,
         )
 
     @staticmethod
-    def handle_top(
+    def handle_series(
+        workbook_data,
+        sheet,
+        header_values,
         start_column,
         end_column,
         start_row,
         end_row,
         header_location,
-        header_values,
-        sheet_data,
-        workbook_data,
-        sheet,
     ):
-        for col_index, header in enumerate(header_values, start=start_column):
-            range_identifier = f"{get_column_letter(col_index)}{start_row + 1}:{get_column_letter(col_index)}{end_row}"
-            series = SeriesExtractor.build_series(
-                workbook_data=workbook_data,
-                sheet=sheet,
-                header=header,
-                header_location=header_location,
-                start_row_or_column=start_row,
-                end_row_or_column=end_row,
-                index=col_index,
-                orientation="top",
+        orientation = "top" if header_location == HeaderLocation.TOP else "left"
+        series_data = {}
+        for index, header in enumerate(
+            header_values, start=start_column if orientation == "top" else start_row
+        ):
+            range_identifier = (
+                f"{get_column_letter(index)}{start_row}:{get_column_letter(index)}{end_row}"
+                if orientation == "top"
+                else f"{get_column_letter(start_column)}{index}:{get_column_letter(end_column)}{index}"
             )
-            sheet_data[range_identifier] = series
-
-    @staticmethod
-    def handle_left(
-        start_column,
-        end_column,
-        start_row,
-        end_row,
-        header_location,
-        header_values,
-        sheet_data,
-        workbook_data,
-        sheet,
-    ):
-        for row_index, header in enumerate(header_values, start=start_row):
-            row_range_identifier = f"{get_column_letter(start_column + 1)}{row_index}:{get_column_letter(end_column)}{row_index}"
             series = SeriesExtractor.build_series(
-                workbook_data=workbook_data,
-                sheet=sheet,
-                header=header,
-                header_location=header_location,
-                start_row_or_column=start_column,
-                end_row_or_column=end_column,
-                index=row_index,
-                orientation="left",
+                workbook_data,
+                sheet,
+                header,
+                header_location,
+                start_row if orientation == "top" else start_column,
+                end_row if orientation == "top" else end_column,
+                index,
+                orientation,
             )
-            sheet_data[row_range_identifier] = series
+            series_data[range_identifier] = series
+        return series_data
 
     @staticmethod
     def extract_table_details(extracted_tables, workbook_data):
         tables_data = {}
-
         for sheet, tables in extracted_tables.items():
             sheet_data = {}
             for table in tables:
-                start_column = table.range.start_cell.column
-                end_column = table.range.end_cell.column
-                start_row = table.range.start_cell.row
-                end_row = table.range.end_cell.row
-                header_location = table.header_location
-                header_values = table.header_values
-
-                if header_location == HeaderLocation.TOP:
-                    SeriesExtractor.handle_top(
-                        start_column,
-                        end_column,
-                        start_row,
-                        end_row,
-                        header_location,
-                        header_values,
-                        sheet_data,
-                        workbook_data,
-                        sheet,
-                    )
-                else:
-                    SeriesExtractor.handle_left(
-                        start_column,
-                        end_column,
-                        start_row,
-                        end_row,
-                        header_location,
-                        header_values,
-                        sheet_data,
-                        workbook_data,
-                        sheet,
-                    )
-
-                tables_data[sheet] = sheet_data
-
+                series_result = SeriesExtractor.handle_series(
+                    workbook_data,
+                    sheet,
+                    table.header_values,
+                    table.range.start_cell.column,
+                    table.range.end_cell.column,
+                    table.range.start_cell.row,
+                    table.range.end_cell.row,
+                    table.header_location,
+                )
+                sheet_data.update(series_result)
+            tables_data[sheet] = sheet_data
         return tables_data
 
     @staticmethod
     def calculate_header_cell(series):
-        series_starting_cell_column = series.series_starting_cell.column
-        series_starting_cell_row = series.series_starting_cell.row
-
-        if series.header_location == HeaderLocation.TOP:
-            header_cell_row = series_starting_cell_row - 1
-            header_cell_column = series_starting_cell_column
-        elif series.header_location == HeaderLocation.LEFT:
-            header_cell_row = series_starting_cell_row
-            header_cell_column = series_starting_cell_column - 1
-
-        return header_cell_row, header_cell_column
+        column, row = (
+            series.series_starting_cell.column,
+            series.series_starting_cell.row,
+        )
+        return (
+            (row - 1, column)
+            if series.header_location == HeaderLocation.TOP
+            else (row, column - 1)
+        )
 
     @staticmethod
     def extract_series(

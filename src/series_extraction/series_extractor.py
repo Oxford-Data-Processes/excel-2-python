@@ -66,8 +66,8 @@ class SeriesExtractor:
     ):
         series = {
             "series_header": header,
-            "row_formulas": [],
-            "row_values": [],
+            "formulas": [],
+            "values": [],
             "header_location": header_location,
             "series_starting_cell": (
                 {"row": start_row_or_column + 1, "column": index}
@@ -84,11 +84,11 @@ class SeriesExtractor:
                 else f"{get_column_letter(start_row_or_column + offset)}{index}"
             )
             cell = sheet_data[cell_key]
-            series["row_formulas"].append(cell.formula)
-            series["row_values"].append(cell.value)
+            series["formulas"].append(cell.formula)
+            series["values"].append(cell.value)
 
-        if series["row_values"]:
-            series["data_type"] = type(series["row_values"][0]).__name__
+        if series["values"]:
+            series["data_type"] = type(series["values"][0]).__name__
 
         return series
 
@@ -227,8 +227,8 @@ class SeriesExtractor:
                     ),
                     worksheet=worksheet,
                     series_header=series["series_header"],
-                    formulas=series["row_formulas"],
-                    values=series["row_values"],
+                    formulas=series["formulas"],
+                    values=series["values"],
                     header_location=series["header_location"],
                     series_starting_cell=Cell(
                         column=series["series_starting_cell"]["column"],

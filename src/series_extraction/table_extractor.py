@@ -9,6 +9,7 @@ from objects import (
 )
 from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union, Any
+import openpyxl
 
 
 class CellOperations:
@@ -68,7 +69,7 @@ class TableLocator:
         return cluster, min_row, max_row, min_col, max_col
 
     @staticmethod
-    def find_table_boundaries(
+    def _find_table_boundaries(
         sheet_name: str, sheet_data: Dict[str, Cell]
     ) -> List[Table]:
         """Identify table boundaries by clustering adjacent non-empty cells and return as Table objects."""
@@ -100,12 +101,12 @@ class TableLocator:
         return tables
 
     @staticmethod
-    def locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> List[LocatedTables]:
+    def _locate_data_tables(data: Dict[str, Dict[str, Cell]]) -> List[LocatedTables]:
         """Locate tables in the given data."""
         all_located_tables = []
 
         for sheet_name, sheet_data in data.items():
-            tables = TableLocator.find_table_boundaries(sheet_name, sheet_data)
+            tables = TableLocator._find_table_boundaries(sheet_name, sheet_data)
             located_tables = LocatedTables(
                 worksheet=Worksheet(sheet_name=sheet_name), tables=tables
             )
@@ -117,7 +118,7 @@ class TableLocator:
 class DataExtractor:
 
     @staticmethod
-    def are_first_row_values_strings(
+    def _are_first_row_values_strings(
         range_input: CellRange, data_object: Dict[str, Cell]
     ) -> Tuple[bool, Optional[List[Union[int, str, float, bool]]]]:
 
@@ -138,7 +139,7 @@ class DataExtractor:
         return True, header_values
 
     @staticmethod
-    def get_first_column_values(
+    def _get_first_column_values(
         range_input: CellRange, data_object: Dict[str, Cell]
     ) -> List[Union[int, str, float, bool]]:
         start_cell = range_input.start_cell
@@ -155,13 +156,13 @@ class DataExtractor:
         return first_column_values
 
     @staticmethod
-    def get_header_location_and_values(data: Dict[str, Any]) -> List[LocatedTables]:
+    def _get_header_location_and_values(data: Dict[str, Any]) -> List[LocatedTables]:
 
-        located_tables = TableLocator.locate_data_tables(data)
+        located_tables = TableLocator._locate_data_tables(data)
 
         for located_table in located_tables:
             for table in located_table.tables:
-                boolean, header_values = DataExtractor.are_first_row_values_strings(
+                boolean, header_values = DataExtractor._are_first_row_values_strings(
                     table.range, data[located_table.worksheet.sheet_name]
                 )
                 if boolean:
@@ -169,7 +170,7 @@ class DataExtractor:
                     table.header_values = header_values
                 else:
                     table.header_location = HeaderLocation.LEFT
-                    table.header_values = DataExtractor.get_first_column_values(
+                    table.header_values = DataExtractor._get_first_column_values(
                         table.range, data[located_table.worksheet.sheet_name]
                     )
 
@@ -177,40 +178,6 @@ class DataExtractor:
 
 
 class TableExtractor:
-
-    @staticmethod
-    def extract_cell_data(cell_values, cell_formulas) -> Cell:
-        cell_coordinate = cell_values.coordinate
-        cell_value = cell_values.value
-        cell_value_type = type(cell_value).__name__
-        formula = (
-            cell_formulas.value
-            if isinstance(cell_formulas.value, str)
-            and cell_formulas.value.startswith("=")
-            else None
-        )
-        return Cell(
-            column=cell_values.column,
-            row=cell_values.row,
-            coordinate=cell_coordinate,
-            sheet_name=cell_values.parent.title,
-            value=cell_value,
-            value_type=cell_value_type,
-            formula=formula,
-        )
-
-    @staticmethod
-    def extract_sheet_data(
-        ws_values: Worksheet, ws_formulas: Worksheet
-    ) -> Dict[str, Cell]:
-        sheet_data = {}
-        for row_values, row_formulas in zip(
-            ws_values.iter_rows(), ws_formulas.iter_rows()
-        ):
-            for cell_values, cell_formulas in zip(row_values, row_formulas):
-                cell = TableExtractor.extract_cell_data(cell_values, cell_formulas)
-                sheet_data[cell.coordinate] = cell
-        return sheet_data
 
     @staticmethod
     def extract_tables(
@@ -225,10 +192,10 @@ class TableExtractor:
                 sheet_name=ws_values.title,
                 worksheet=ws_values,
             )
-            sheet_data = TableExtractor.extract_sheet_data(ws_values, ws_formulas)
+            sheet_data = TableExtractor._extract_sheet_data(ws_values, ws_formulas)
             data[worksheet.sheet_name] = sheet_data
 
-        located_tables = DataExtractor.get_header_location_and_values(data)
+        located_tables = DataExtractor._get_header_location_and_values(data)
 
         extracted_tables = {}
         for located_table in located_tables:
@@ -237,3 +204,40 @@ class TableExtractor:
             ] = located_table.tables
 
         return extracted_tables, data
+
+    @staticmethod
+    def _extract_cell_data(
+        cell_with_value: openpyxl.cell.cell.Cell,
+        cell_with_formula: openpyxl.cell.cell.Cell,
+    ) -> Cell:
+        formula = (
+            cell_with_formula.value
+            if isinstance(cell_with_formula.value, str)
+            and cell_with_formula.value.startswith("=")
+            else None
+        )
+        return Cell(
+            column=cell_with_value.column,
+            row=cell_with_value.row,
+            coordinate=cell_with_value.coordinate,
+            sheet_name=cell_with_value.parent.title,
+            value=cell_with_value.value,
+            value_type=type(cell_with_value.value).__name__,
+            formula=formula,
+        )
+
+    @staticmethod
+    def _extract_sheet_data(
+        worksheet_with_values: Worksheet, worksheet_with_formulas: Worksheet
+    ) -> Dict[str, Cell]:
+        """Extract data from a worksheet and return as a dictionary of cells."""
+        sheet_data = {}
+        for row_values, row_formulas in zip(
+            worksheet_with_values.iter_rows(), worksheet_with_formulas.iter_rows()
+        ):
+            for cell_with_value, cell_with_formula in zip(row_values, row_formulas):
+                cell = TableExtractor._extract_cell_data(
+                    cell_with_value, cell_with_formula
+                )
+                sheet_data[cell.coordinate] = cell
+        return sheet_data

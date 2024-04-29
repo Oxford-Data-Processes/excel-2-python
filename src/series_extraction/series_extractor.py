@@ -54,42 +54,6 @@ class SeriesExtractor:
         return series_data
 
     @staticmethod
-    def build_series_data_top(
-        workbook_data, sheet, header, header_location, start_row, end_row, col_index
-    ):
-        return SeriesExtractor.build_series_data(
-            workbook_data,
-            sheet,
-            header,
-            header_location,
-            start_row,
-            end_row,
-            col_index,
-            orientation="top",
-        )
-
-    @staticmethod
-    def build_series_data_left(
-        workbook_data,
-        sheet,
-        header,
-        header_location,
-        start_column,
-        end_column,
-        row_index,
-    ):
-        return SeriesExtractor.build_series_data(
-            workbook_data,
-            sheet,
-            header,
-            header_location,
-            start_column,
-            end_column,
-            row_index,
-            orientation="left",
-        )
-
-    @staticmethod
     def extract_table_details(extracted_tables, data):
         tables_data = {}
 
@@ -108,28 +72,30 @@ class SeriesExtractor:
                         header_values, start=start_column
                     ):
                         range_identifier = f"{get_column_letter(col_index)}{start_row + 1}:{get_column_letter(col_index)}{end_row}"
-                        series_data = SeriesExtractor.build_series_data_top(
-                            data,
-                            sheet,
-                            header,
-                            header_location.value,
-                            start_row,
-                            end_row,
-                            col_index,
+                        series_data = SeriesExtractor.build_series_data(
+                            workbook_data=data,
+                            sheet=sheet,
+                            header=header,
+                            header_location=header_location.value,
+                            start_row_or_column=start_row,
+                            end_row_or_column=end_row,
+                            index=col_index,
+                            orientation="top",
                         )
                         sheet_data[range_identifier] = series_data
                 else:
                     for row_index, header in enumerate(header_values, start=start_row):
                         row_range_identifier = f"{get_column_letter(start_column + 1)}{row_index}:{get_column_letter(end_column)}{row_index}"
 
-                        series_data = SeriesExtractor.build_series_data_left(
-                            data,
-                            sheet,
-                            header,
-                            header_location.value,
-                            start_column,
-                            end_column,
-                            row_index,
+                        series_data = SeriesExtractor.build_series_data(
+                            workbook_data=data,
+                            sheet=sheet,
+                            header=header,
+                            header_location=header_location.value,
+                            start_row_or_column=start_column,
+                            end_row_or_column=end_column,
+                            index=row_index,
+                            orientation="left",
                         )
                         sheet_data[row_range_identifier] = series_data
 

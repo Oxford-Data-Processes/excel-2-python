@@ -192,27 +192,6 @@ class SeriesExtractor:
         for worksheet_obj, table_data in detailed_series.items():
             series_collection[worksheet_obj.sheet_name] = []
             for _, single_series in table_data.items():
-
-                series_instance = Series(
-                    series_id=SeriesId(
-                        sheet_name=single_series.worksheet.sheet_name,
-                        series_header=single_series.series_header,
-                        series_header_cell_row=single_series.series_id.series_header_cell_row,
-                        series_header_cell_column=single_series.series_id.series_header_cell_column,
-                    ),
-                    worksheet=worksheet_obj,
-                    series_header=single_series.series_header,
-                    formulas=single_series.formulas,
-                    values=single_series.values,
-                    header_location=single_series.header_location,
-                    series_starting_cell=Cell(
-                        column=single_series.series_starting_cell.column,
-                        row=single_series.series_starting_cell.row,
-                        coordinate=f"{get_column_letter(single_series.series_starting_cell.column)}{single_series.series_starting_cell.row}",
-                    ),
-                    series_length=int(single_series.series_length),
-                    series_data_type=SeriesDataType(single_series.series_data_type),
-                )
-                series_collection[worksheet_obj.sheet_name].append(series_instance)
+                series_collection[worksheet_obj.sheet_name].append(single_series)
 
         return series_collection

@@ -80,6 +80,32 @@ class SeriesExtractor:
             sheet_data[range_identifier] = series_data
 
     @staticmethod
+    def handle_left(
+        start_column,
+        end_column,
+        start_row,
+        end_row,
+        header_location,
+        header_values,
+        sheet_data,
+        workbook_data,
+        sheet,
+    ):
+        for row_index, header in enumerate(header_values, start=start_row):
+            row_range_identifier = f"{get_column_letter(start_column + 1)}{row_index}:{get_column_letter(end_column)}{row_index}"
+            series_data = SeriesExtractor.build_series_data(
+                workbook_data=workbook_data,
+                sheet=sheet,
+                header=header,
+                header_location=header_location.value,
+                start_row_or_column=start_column,
+                end_row_or_column=end_column,
+                index=row_index,
+                orientation="left",
+            )
+            sheet_data[row_range_identifier] = series_data
+
+    @staticmethod
     def extract_table_details(extracted_tables, workbook_data):
         tables_data = {}
 
@@ -106,22 +132,19 @@ class SeriesExtractor:
                         sheet,
                     )
                 else:
-                    for row_index, header in enumerate(header_values, start=start_row):
-                        row_range_identifier = f"{get_column_letter(start_column + 1)}{row_index}:{get_column_letter(end_column)}{row_index}"
+                    SeriesExtractor.handle_left(
+                        start_column,
+                        end_column,
+                        start_row,
+                        end_row,
+                        header_location,
+                        header_values,
+                        sheet_data,
+                        workbook_data,
+                        sheet,
+                    )
 
-                        series_data = SeriesExtractor.build_series_data(
-                            workbook_data=workbook_data,
-                            sheet=sheet,
-                            header=header,
-                            header_location=header_location.value,
-                            start_row_or_column=start_column,
-                            end_row_or_column=end_column,
-                            index=row_index,
-                            orientation="left",
-                        )
-                        sheet_data[row_range_identifier] = series_data
-
-            tables_data[sheet] = sheet_data
+                tables_data[sheet] = sheet_data
 
         return tables_data
 

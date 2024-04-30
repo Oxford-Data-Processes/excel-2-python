@@ -2,12 +2,16 @@ import xlcalculator
 from objects import Cell, Worksheet, Series, SeriesRange
 from excel_utils import ExcelUtils
 
+from typing import Optional
+
 
 class SeriesMappingAccessor:
     def __init__(self, series_mapping: dict[Worksheet, dict[Cell, Series]]) -> None:
         self.series_mapping = series_mapping
 
-    def get_series_from_cell(self, worksheet: Worksheet, cell: Cell):
+    def get_series_from_cell(
+        self, worksheet: Worksheet, cell: Cell
+    ) -> Optional[Series]:
         try:
             return self.series_mapping[worksheet][cell]
         except KeyError:

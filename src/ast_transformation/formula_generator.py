@@ -33,29 +33,17 @@ class SeriesIdLoader:
         )
 
 
-class ASTGenerator:
-    def __init__(
-        self,
-        formula_1_ast_series: xlcalculator.ast_nodes.ASTNode,
-        formula_2_ast_series: xlcalculator.ast_nodes.ASTNode,
-        series_list: List[Series],
-    ):
-        self.formula_1_ast_series = formula_1_ast_series
-        self.formula_2_ast_series = formula_2_ast_series
-        self.series_list = series_list
+class DeltaCalculator:
 
     @staticmethod
-    def extract_tuples(node_value: str):
-        return ast.literal_eval(node_value)
-
-    def get_delta_between_nodes(self, node1_value: str, node2_value: str):
-        node1_tuple = self.extract_tuples(node1_value)
-        node2_tuple = self.extract_tuples(node2_value)
+    def get_delta_between_nodes(node1_value: str, node2_value: str):
+        node1_tuple = ast.literal_eval(node1_value)
+        node2_tuple = ast.literal_eval(node2_value)
 
         if node1_tuple[1] == (None, None) or node2_tuple[1] == (None, None):
             return None
         else:
-            return self.calculate_deltas(node1_tuple, node2_tuple)
+            return DeltaCalculator.calculate_deltas(node1_tuple, node2_tuple)
 
     @staticmethod
     def calculate_deltas(
@@ -109,6 +97,49 @@ class ASTGenerator:
             *node1_row_indexes,
         )
 
+
+class NodeProcessor:
+    def __init__(self, series_list):
+        self.series_list = series_list
+        self.series_updater = SeriesUpdater(series_list)
+
+    def process_range_node(self, node1, node2, n):
+        series_range_delta = DeltaCalculator.get_delta_between_nodes(
+            node1.tvalue, node2.tvalue
+        )
+        if series_range_delta:
+            return self.apply_delta_to_node(node1, series_range_delta, n)
+        return node1
+
+    def process_function_node(self, node1, node2, n):
+        modified_args = [
+            self.apply_delta_to_range_node(arg, node2.args[i], n)
+            for i, arg in enumerate(node1.args)
+        ]
+        modified_node = xlcalculator.ast_nodes.FunctionNode(node1.token)
+        modified_node.args = modified_args
+        return modified_node
+
+    def process_operator_node(self, node1, node2, n):
+        modified_left = (
+            self.apply_delta_to_range_node(node1.left, node2.left, n)
+            if node1.left
+            else None
+        )
+        modified_right = (
+            self.apply_delta_to_range_node(node1.right, node2.right, n)
+            if node1.right
+            else None
+        )
+        modified_node = xlcalculator.ast_nodes.OperatorNode(node1.token)
+        modified_node.left = modified_left
+        modified_node.right = modified_right
+        return modified_node
+
+    def apply_delta_to_node(self, node, series_range_delta, n):
+        deltas = self.extract_deltas_from_range(series_range_delta)
+        return self.update_range_node(node, *deltas, n)
+
     def apply_delta_to_range_node(
         self,
         node1: xlcalculator.ast_nodes.ASTNode,
@@ -130,10 +161,6 @@ class ASTGenerator:
         else:
             return node1
 
-    def apply_delta_to_node(self, node, series_range_delta, n):
-        deltas = self.extract_deltas_from_range(series_range_delta)
-        return self.update_range_node(node, *deltas, n)
-
     def extract_deltas_from_range(self, series_range_delta):
         return (
             series_range_delta.start_row_index_delta,
@@ -145,65 +172,6 @@ class ASTGenerator:
             series_range_delta.start_row_index,
             series_range_delta.end_row_index,
         )
-
-    def update_range_node(
-        self,
-        node,
-        start_row_index_delta,
-        end_row_index_delta,
-        series_id_start_row_index_delta,
-        series_id_end_row_index_delta,
-        series_id_start_column_index_delta,
-        series_id_end_column_index_delta,
-        start_row_index,
-        end_row_index,
-        n,
-    ):
-        new_series_ids = self.calculate_new_series_ids(
-            node, series_id_start_row_index_delta, series_id_start_column_index_delta, n
-        )
-        new_tvalue = str(
-            (
-                tuple(new_series_ids),
-                (
-                    start_row_index + start_row_index_delta * (n - 1),
-                    end_row_index + end_row_index_delta * (n - 1),
-                ),
-            )
-        )
-        return xlcalculator.ast_nodes.RangeNode(
-            xlcalculator.tokenizer.f_token(
-                tvalue=new_tvalue, ttype="operand", tsubtype="range"
-            )
-        )
-
-    def calculate_new_series_ids(
-        self,
-        node,
-        series_id_start_row_index_delta,
-        series_id_start_column_index_delta,
-        n,
-    ):
-        series_ids_string = self.extract_tuples(node.tvalue)[0]
-        series_ids = [
-            SeriesIdLoader.load_series_id_from_string(sid) for sid in series_ids_string
-        ]
-        return [
-            str(
-                self.add_column_delta_to_series_id(
-                    sid,
-                    series_id_start_row_index_delta * (n - 1),
-                    series_id_start_column_index_delta * (n - 1),
-                )
-            )
-            for sid in series_ids
-        ]
-
-    def process_range_node(self, node1, node2, n):
-        series_range_delta = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
-        if series_range_delta:
-            return self.apply_delta_to_node(node1, series_range_delta, n)
-        return node1
 
     def update_range_node(
         self,
@@ -219,14 +187,14 @@ class ASTGenerator:
         n,
     ):
 
-        series_ids_string = self.extract_tuples(node1.tvalue)[0]
+        series_ids_string = ast.literal_eval(node1.tvalue)[0]
         series_ids = [
             SeriesIdLoader.load_series_id_from_string(sid) for sid in series_ids_string
         ]
 
         new_series_ids = [
             str(
-                self.add_column_delta_to_series_id(
+                self.series_updater.add_column_delta_to_series_id(
                     sid,
                     series_id_start_row_index_delta * (n - 1),
                     series_id_start_column_index_delta * (n - 1),
@@ -249,6 +217,11 @@ class ASTGenerator:
                 tvalue=new_tvalue, ttype="operand", tsubtype="range"
             )
         )
+
+
+class SeriesUpdater:
+    def __init__(self, series_list):
+        self.series_list = series_list
 
     def add_column_delta_to_series_id(
         self,
@@ -306,33 +279,20 @@ class ASTGenerator:
         else:
             return series_id
 
-    def process_function_node(self, node1, node2, n):
-        modified_args = [
-            self.apply_delta_to_range_node(arg, node2.args[i], n)
-            for i, arg in enumerate(node1.args)
-        ]
-        modified_node = xlcalculator.ast_nodes.FunctionNode(node1.token)
-        modified_node.args = modified_args
-        return modified_node
 
-    def process_operator_node(self, node1, node2, n):
-        modified_left = (
-            self.apply_delta_to_range_node(node1.left, node2.left, n)
-            if node1.left
-            else None
-        )
-        modified_right = (
-            self.apply_delta_to_range_node(node1.right, node2.right, n)
-            if node1.right
-            else None
-        )
-        modified_node = xlcalculator.ast_nodes.OperatorNode(node1.token)
-        modified_node.left = modified_left
-        modified_node.right = modified_right
-        return modified_node
+class ASTGenerator:
+    def __init__(
+        self,
+        formula_1_ast_series: xlcalculator.ast_nodes.ASTNode,
+        formula_2_ast_series: xlcalculator.ast_nodes.ASTNode,
+        series_list: List[Series],
+    ):
+        self.formula_1_ast_series = formula_1_ast_series
+        self.formula_2_ast_series = formula_2_ast_series
+        self.node_processor = NodeProcessor(series_list)
 
     def get_nth_formula(self, n: int) -> xlcalculator.ast_nodes.ASTNode:
-        return self.apply_delta_to_range_node(
+        return self.node_processor.apply_delta_to_range_node(
             self.formula_1_ast_series, self.formula_2_ast_series, n=n
         )
 

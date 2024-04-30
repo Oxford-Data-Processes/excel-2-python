@@ -1,6 +1,6 @@
 import xlcalculator
 import ast
-from typing import List
+from typing import List, Tuple, Optional, Callable
 from objects import Series, SeriesId
 
 
@@ -46,17 +46,21 @@ class DeltaCalculator:
             return DeltaCalculator.calculate_deltas(node1_tuple, node2_tuple)
 
     @staticmethod
-    def load_series_ids(series_ids_strings):
+    def load_series_ids(series_ids_strings: List[str]) -> List[SeriesId]:
         return [
             SeriesIdLoader.load_series_id_from_string(sid) for sid in series_ids_strings
         ]
 
     @staticmethod
-    def calculate_index_deltas(indexes1, indexes2):
+    def calculate_index_deltas(
+        indexes1: Tuple[int, int], indexes2: Tuple[int, int]
+    ) -> Tuple[int, int]:
         return tuple(x - y for x, y in zip(indexes1, indexes2))
 
     @staticmethod
-    def calculate_series_id_index_deltas(series_ids1, series_ids2):
+    def calculate_series_id_index_deltas(
+        series_ids1: List[SeriesId], series_ids2: List[SeriesId]
+    ) -> Tuple[int, int, int, int]:
         start_row_index_delta = (
             series_ids2[0].series_header_cell_row
             - series_ids1[0].series_header_cell_row
@@ -81,7 +85,10 @@ class DeltaCalculator:
         )
 
     @staticmethod
-    def calculate_deltas(node1_tuple, node2_tuple):
+    def calculate_deltas(
+        node1_tuple: Tuple[List[str], Tuple[int, int]],
+        node2_tuple: Tuple[List[str], Tuple[int, int]],
+    ) -> SeriesRangeDelta:
         node1_series_ids_strings, node1_row_indexes = node1_tuple
         node2_series_ids_strings, node2_row_indexes = node2_tuple
 
@@ -106,11 +113,16 @@ class DeltaCalculator:
 
 
 class NodeProcessor:
-    def __init__(self, series_list):
+    def __init__(self, series_list: List[Series]):
         self.series_list = series_list
         self.series_updater = SeriesUpdater(series_list)
 
-    def process_range_node(self, node1, node2, n):
+    def process_range_node(
+        self,
+        node1: xlcalculator.ast_nodes.RangeNode,
+        node2: xlcalculator.ast_nodes.RangeNode,
+        n: int,
+    ) -> xlcalculator.ast_nodes.RangeNode:
         series_range_delta = DeltaCalculator.get_delta_between_nodes(
             node1.tvalue, node2.tvalue
         )
@@ -118,7 +130,12 @@ class NodeProcessor:
             return self.apply_delta_to_node(node1, series_range_delta, n)
         return node1
 
-    def process_function_node(self, node1, node2, n):
+    def process_function_node(
+        self,
+        node1: xlcalculator.ast_nodes.FunctionNode,
+        node2: xlcalculator.ast_nodes.FunctionNode,
+        n: int,
+    ) -> xlcalculator.ast_nodes.FunctionNode:
         modified_args = [
             self.apply_delta_to_range_node(arg, node2.args[i], n)
             for i, arg in enumerate(node1.args)
@@ -127,7 +144,12 @@ class NodeProcessor:
         modified_node.args = modified_args
         return modified_node
 
-    def process_operator_node(self, node1, node2, n):
+    def process_operator_node(
+        self,
+        node1: xlcalculator.ast_nodes.OperatorNode,
+        node2: xlcalculator.ast_nodes.OperatorNode,
+        n: int,
+    ) -> xlcalculator.ast_nodes.OperatorNode:
         modified_left = (
             self.apply_delta_to_range_node(node1.left, node2.left, n)
             if node1.left
@@ -143,7 +165,12 @@ class NodeProcessor:
         modified_node.right = modified_right
         return modified_node
 
-    def apply_delta_to_node(self, node, series_range_delta, n):
+    def apply_delta_to_node(
+        self,
+        node: xlcalculator.ast_nodes.ASTNode,
+        series_range_delta: SeriesRangeDelta,
+        n: int,
+    ) -> xlcalculator.ast_nodes.ASTNode:
         deltas = self.extract_deltas_from_range(series_range_delta)
         return self.update_range_node(node, *deltas, n)
 
@@ -168,7 +195,9 @@ class NodeProcessor:
         else:
             return node1
 
-    def extract_deltas_from_range(self, series_range_delta):
+    def extract_deltas_from_range(
+        self, series_range_delta: SeriesRangeDelta
+    ) -> Tuple[int, int, int, int, int, int, int, int]:
         return (
             series_range_delta.start_row_index_delta,
             series_range_delta.end_row_index_delta,
@@ -182,17 +211,17 @@ class NodeProcessor:
 
     def update_range_node(
         self,
-        node1,
-        start_row_index_delta,
-        end_row_index_delta,
-        series_id_start_row_index_delta,
-        series_id_end_row_index_delta,
-        series_id_start_column_index_delta,
-        series_id_end_column_index_delta,
-        start_row_index,
-        end_row_index,
-        n,
-    ):
+        node1: xlcalculator.ast_nodes.RangeNode,
+        start_row_index_delta: int,
+        end_row_index_delta: int,
+        series_id_start_row_index_delta: int,
+        series_id_end_row_index_delta: int,
+        series_id_start_column_index_delta: int,
+        series_id_end_column_index_delta: int,
+        start_row_index: int,
+        end_row_index: int,
+        n: int,
+    ) -> xlcalculator.ast_nodes.RangeNode:
 
         series_ids_string = ast.literal_eval(node1.tvalue)[0]
         series_ids = [
@@ -230,14 +259,16 @@ class SeriesUpdater:
     def __init__(self, series_list):
         self.series_list = series_list
 
-    def update_series_header_indexes(self, series_id, row_delta, column_delta):
+    def update_series_header_indexes(
+        self, series_id: SeriesId, row_delta: int, column_delta: int
+    ) -> Tuple[int, int]:
         """Update the series header indexes by adding the respective deltas."""
         return (
             series_id.series_header_cell_column + column_delta,
             series_id.series_header_cell_row + row_delta,
         )
 
-    def find_series(self, condition):
+    def find_series(self, condition: Callable[[Series], bool]) -> Optional[SeriesId]:
         """Generalized method to find a series based on a provided condition."""
         for series in self.series_list:
             if condition(series):
@@ -247,8 +278,8 @@ class SeriesUpdater:
     def add_column_delta_to_series_id(
         self,
         series_id: SeriesId,
-        series_id_start_row_index_delta,
-        series_id_start_column_index_delta,
+        series_id_start_row_index_delta: int,
+        series_id_start_column_index_delta: int,
     ):
         """Apply column and row deltas to the series ID and find the matching series ID."""
         updated_column, updated_row = self.update_series_header_indexes(

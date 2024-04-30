@@ -46,55 +46,62 @@ class DeltaCalculator:
             return DeltaCalculator.calculate_deltas(node1_tuple, node2_tuple)
 
     @staticmethod
-    def calculate_deltas(
-        node1_tuple: tuple[tuple[str], tuple[int, int]],
-        node2_tuple: tuple[tuple[str], tuple[int, int]],
-    ) -> SeriesRangeDelta:
+    def load_series_ids(series_ids_strings):
+        return [
+            SeriesIdLoader.load_series_id_from_string(sid) for sid in series_ids_strings
+        ]
 
+    @staticmethod
+    def calculate_index_deltas(indexes1, indexes2):
+        return tuple(x - y for x, y in zip(indexes1, indexes2))
+
+    @staticmethod
+    def calculate_series_id_index_deltas(series_ids1, series_ids2):
+        start_row_index_delta = (
+            series_ids2[0].series_header_cell_row
+            - series_ids1[0].series_header_cell_row
+        )
+        end_row_index_delta = (
+            series_ids2[-1].series_header_cell_row
+            - series_ids1[-1].series_header_cell_row
+        )
+        start_column_index_delta = (
+            series_ids2[0].series_header_cell_column
+            - series_ids1[0].series_header_cell_column
+        )
+        end_column_index_delta = (
+            series_ids2[-1].series_header_cell_column
+            - series_ids1[-1].series_header_cell_column
+        )
+        return (
+            start_row_index_delta,
+            end_row_index_delta,
+            start_column_index_delta,
+            end_column_index_delta,
+        )
+
+    @staticmethod
+    def calculate_deltas(node1_tuple, node2_tuple):
         node1_series_ids_strings, node1_row_indexes = node1_tuple
         node2_series_ids_strings, node2_row_indexes = node2_tuple
 
-        node1_series_ids = [
-            SeriesIdLoader.load_series_id_from_string(sid)
-            for sid in node1_series_ids_strings
-        ]
-        node2_series_ids = [
-            SeriesIdLoader.load_series_id_from_string(sid)
-            for sid in node2_series_ids_strings
-        ]
+        # Load SeriesId objects from strings
+        node1_series_ids = DeltaCalculator.load_series_ids(node1_series_ids_strings)
+        node2_series_ids = DeltaCalculator.load_series_ids(node2_series_ids_strings)
 
-        start_row_index_delta, end_row_index_delta = map(
-            lambda x, y: x - y, node2_row_indexes, node1_row_indexes
+        # Calculate row index deltas
+        row_index_deltas = DeltaCalculator.calculate_index_deltas(
+            node2_row_indexes, node1_row_indexes
         )
 
-        series_id_start_row_index_delta = (
-            node2_series_ids[0].series_header_cell_row
-            - node1_series_ids[0].series_header_cell_row
+        # Calculate series ID index deltas
+        series_id_deltas = DeltaCalculator.calculate_series_id_index_deltas(
+            node1_series_ids, node2_series_ids
         )
 
-        series_id_end_row_index_delta = (
-            node2_series_ids[-1].series_header_cell_row
-            - node1_series_ids[-1].series_header_cell_row
-        )
-
-        series_id_start_column_index_delta = (
-            node2_series_ids[0].series_header_cell_column
-            - node1_series_ids[0].series_header_cell_column
-        )
-
-        series_id_end_column_index_delta = (
-            node2_series_ids[-1].series_header_cell_column
-            - node1_series_ids[-1].series_header_cell_column
-        )
-
+        # Construct and return the SeriesRangeDelta object
         return SeriesRangeDelta(
-            start_row_index_delta,
-            end_row_index_delta,
-            series_id_start_row_index_delta,
-            series_id_end_row_index_delta,
-            series_id_start_column_index_delta,
-            series_id_end_column_index_delta,
-            *node1_row_indexes,
+            *row_index_deltas, *series_id_deltas, *node1_row_indexes
         )
 
 

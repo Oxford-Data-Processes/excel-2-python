@@ -4,6 +4,21 @@ from typing import List
 from objects import Series, SeriesId
 
 
+from dataclasses import dataclass
+
+
+@dataclass
+class SeriesRangeDelta:
+    start_row_index_delta: int
+    end_row_index_delta: int
+    series_id_start_row_index_delta: int
+    series_id_end_row_index_delta: int
+    series_id_start_column_index_delta: int
+    series_id_end_column_index_delta: int
+    start_row_index: int
+    end_row_index: int
+
+
 class SeriesIdLoader:
     @staticmethod
     def load_series_id_from_string(series_id_string: str) -> SeriesId:
@@ -16,28 +31,6 @@ class SeriesIdLoader:
             series_header_cell_row=int(series_header_cell_row),
             series_header_cell_column=int(series_header_cell_column),
         )
-
-
-class SeriesRangeDelta:
-    def __init__(
-        self,
-        start_row_index_delta,
-        end_row_index_delta,
-        series_id_start_row_index_delta,
-        series_id_end_row_index_delta,
-        series_id_start_column_index_delta,
-        series_id_end_column_index_delta,
-        start_row_index,
-        end_row_index,
-    ):
-        self.start_row_index_delta = start_row_index_delta
-        self.end_row_index_delta = end_row_index_delta
-        self.series_id_start_row_index_delta = series_id_start_row_index_delta
-        self.series_id_end_row_index_delta = series_id_end_row_index_delta
-        self.series_id_start_column_index_delta = series_id_start_column_index_delta
-        self.series_id_end_column_index_delta = series_id_end_column_index_delta
-        self.start_row_index = start_row_index
-        self.end_row_index = end_row_index
 
 
 class ASTGenerator:

@@ -130,39 +130,79 @@ class ASTGenerator:
         else:
             return node1
 
-    def process_range_node(self, node1, node2, n):
+    def apply_delta_to_node(self, node, series_range_delta, n):
+        deltas = self.extract_deltas_from_range(series_range_delta)
+        return self.update_range_node(node, *deltas, n)
 
+    def extract_deltas_from_range(self, series_range_delta):
+        return (
+            series_range_delta.start_row_index_delta,
+            series_range_delta.end_row_index_delta,
+            series_range_delta.series_id_start_row_index_delta,
+            series_range_delta.series_id_end_row_index_delta,
+            series_range_delta.series_id_start_column_index_delta,
+            series_range_delta.series_id_end_column_index_delta,
+            series_range_delta.start_row_index,
+            series_range_delta.end_row_index,
+        )
+
+    def update_range_node(
+        self,
+        node,
+        start_row_index_delta,
+        end_row_index_delta,
+        series_id_start_row_index_delta,
+        series_id_end_row_index_delta,
+        series_id_start_column_index_delta,
+        series_id_end_column_index_delta,
+        start_row_index,
+        end_row_index,
+        n,
+    ):
+        new_series_ids = self.calculate_new_series_ids(
+            node, series_id_start_row_index_delta, series_id_start_column_index_delta, n
+        )
+        new_tvalue = str(
+            (
+                tuple(new_series_ids),
+                (
+                    start_row_index + start_row_index_delta * (n - 1),
+                    end_row_index + end_row_index_delta * (n - 1),
+                ),
+            )
+        )
+        return xlcalculator.ast_nodes.RangeNode(
+            xlcalculator.tokenizer.f_token(
+                tvalue=new_tvalue, ttype="operand", tsubtype="range"
+            )
+        )
+
+    def calculate_new_series_ids(
+        self,
+        node,
+        series_id_start_row_index_delta,
+        series_id_start_column_index_delta,
+        n,
+    ):
+        series_ids_string = self.extract_tuples(node.tvalue)[0]
+        series_ids = [
+            SeriesIdLoader.load_series_id_from_string(sid) for sid in series_ids_string
+        ]
+        return [
+            str(
+                self.add_column_delta_to_series_id(
+                    sid,
+                    series_id_start_row_index_delta * (n - 1),
+                    series_id_start_column_index_delta * (n - 1),
+                )
+            )
+            for sid in series_ids
+        ]
+
+    def process_range_node(self, node1, node2, n):
         series_range_delta = self.get_delta_between_nodes(node1.tvalue, node2.tvalue)
         if series_range_delta:
-
-            start_row_index_delta = series_range_delta.start_row_index_delta
-            end_row_index_delta = series_range_delta.end_row_index_delta
-            series_id_start_row_index_delta = (
-                series_range_delta.series_id_start_row_index_delta
-            )
-            series_id_end_row_index_delta = (
-                series_range_delta.series_id_end_row_index_delta
-            )
-            series_id_start_column_index_delta = (
-                series_range_delta.series_id_start_column_index_delta
-            )
-            series_id_end_column_index_delta = (
-                series_range_delta.series_id_end_column_index_delta
-            )
-            start_row_index = series_range_delta.start_row_index
-            end_row_index = series_range_delta.end_row_index
-            return self.update_range_node(
-                node1,
-                start_row_index_delta,
-                end_row_index_delta,
-                series_id_start_row_index_delta,
-                series_id_end_row_index_delta,
-                series_id_start_column_index_delta,
-                series_id_end_column_index_delta,
-                start_row_index,
-                end_row_index,
-                n,
-            )
+            return self.apply_delta_to_node(node1, series_range_delta, n)
         return node1
 
     def update_range_node(

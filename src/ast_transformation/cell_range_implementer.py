@@ -1,7 +1,8 @@
 import xlcalculator
 import ast
+from typing import Dict, List, Tuple, Optional, Union
 
-from objects import Cell, HeaderLocation, CellRange, Column, CellRangeColumn
+from objects import Cell, HeaderLocation, CellRange, Column, CellRangeColumn, Series
 
 from excel_utils import ExcelUtils
 from ast_transformation.formula_generator import SeriesIdLoader
@@ -9,10 +10,10 @@ from ast_transformation.formula_generator import SeriesIdLoader
 
 class CellRangeImplementer:
 
-    def __init__(self, series_dict):
+    def __init__(self, series_dict: Dict[str, List[Series]]):
         self.series_dict = series_dict
 
-    def merge_cell_ranges(self, cell_ranges):
+    def merge_cell_ranges(self, cell_ranges: List[CellRange]) -> CellRange:
 
         min_row = min(cell_range.start_cell.row for cell_range in cell_ranges)
         min_column = min(cell_range.start_cell.column for cell_range in cell_ranges)
@@ -39,8 +40,13 @@ class CellRangeImplementer:
         return CellRange(start_cell=start_cell, end_cell=end_cell)
 
     def create_cell_range_top_header(
-        self, start_index, end_index, cell_row, cell_column, sheet_name
-    ):
+        self,
+        start_index: int,
+        end_index: int,
+        cell_row: int,
+        cell_column: int,
+        sheet_name: str,
+    ) -> CellRange:
 
         return CellRange(
             start_cell=Cell(
@@ -62,8 +68,13 @@ class CellRangeImplementer:
         )
 
     def create_cell_range_left_header(
-        self, start_index, end_index, cell_row, cell_column, sheet_name
-    ):
+        self,
+        start_index: int,
+        end_index: int,
+        cell_row: int,
+        cell_column: int,
+        sheet_name: str,
+    ) -> CellRange:
         return CellRange(
             start_cell=Cell(
                 row=cell_row,
@@ -83,7 +94,9 @@ class CellRangeImplementer:
             ),
         )
 
-    def get_cell_range_from_series_tuple(self, series_tuple):
+    def get_cell_range_from_series_tuple(
+        self, series_tuple: Tuple[List[str], Tuple[int, int]]
+    ) -> Union[CellRange, CellRangeColumn]:
 
         series_ids_string, indexes = series_tuple
         series_start_index, series_end_index = indexes
@@ -95,7 +108,7 @@ class CellRangeImplementer:
             series_ids_string, series_start_index, series_end_index
         )
 
-    def process_series_columns(self, series_ids_string):
+    def process_series_columns(self, series_ids_string: List[str]) -> CellRangeColumn:
         column_values = []
 
         sheet_name = SeriesIdLoader.load_series_id_from_string(
@@ -112,7 +125,7 @@ class CellRangeImplementer:
             sheet_name=sheet_name,
         )
 
-    def get_column_from_series_id(self, series_id_string):
+    def get_column_from_series_id(self, series_id_string: str) -> Column:
         series_id = SeriesIdLoader.load_series_id_from_string(series_id_string)
         sheet_name = series_id.sheet_name
         series_list = self.series_dict.get(sheet_name)
@@ -128,8 +141,11 @@ class CellRangeImplementer:
                 )
 
     def process_series_cells(
-        self, series_ids_string, series_start_index, series_end_index
-    ):
+        self,
+        series_ids_string: List[str],
+        series_start_index: Optional[int],
+        series_end_index: Optional[int],
+    ) -> CellRange:
 
         cell_ranges = []
 
@@ -143,8 +159,11 @@ class CellRangeImplementer:
         return self.merge_cell_ranges(cell_ranges)
 
     def get_cell_range_for_series_id(
-        self, series_id_string, series_start_index, series_end_index
-    ):
+        self,
+        series_id_string: str,
+        series_start_index: Optional[int],
+        series_end_index: Optional[int],
+    ) -> CellRange:
         series_id = SeriesIdLoader.load_series_id_from_string(series_id_string)
         sheet_name = series_id.sheet_name
         series_list = self.series_dict.get(sheet_name)
@@ -156,8 +175,12 @@ class CellRangeImplementer:
                 )
 
     def create_cell_range(
-        self, series, series_start_index, series_end_index, sheet_name
-    ):
+        self,
+        series: Series,
+        series_start_index: Optional[int],
+        series_end_index: Optional[int],
+        sheet_name: str,
+    ) -> CellRange:
         cell_value = series.series_starting_cell
         cell_row = cell_value.row
         cell_column = cell_value.column
@@ -173,7 +196,9 @@ class CellRangeImplementer:
         else:
             raise Exception("Header location is not valid")
 
-    def update_ast(self, ast):
+    def update_ast(
+        self, ast: xlcalculator.ast_nodes.ASTNode
+    ) -> xlcalculator.ast_nodes.ASTNode:
         if isinstance(ast, xlcalculator.ast_nodes.RangeNode):
             return self.replace_range_node(ast)
         elif isinstance(ast, xlcalculator.ast_nodes.FunctionNode):
@@ -182,7 +207,9 @@ class CellRangeImplementer:
             return self.replace_operator_node(ast)
         return ast
 
-    def replace_range_node(self, node):
+    def replace_range_node(
+        self, node: xlcalculator.ast_nodes.RangeNode
+    ) -> xlcalculator.ast_nodes.RangeNode:
 
         series_tuple = ast.literal_eval(node.tvalue)
         cell_range = self.get_cell_range_from_series_tuple(series_tuple)
@@ -193,13 +220,17 @@ class CellRangeImplementer:
             )
         )
 
-    def replace_function_node(self, node):
+    def replace_function_node(
+        self, node: xlcalculator.ast_nodes.FunctionNode
+    ) -> xlcalculator.ast_nodes.FunctionNode:
         modified_args = [self.update_ast(arg) for arg in node.args]
         modified_function_node = xlcalculator.ast_nodes.FunctionNode(node.token)
         modified_function_node.args = modified_args
         return modified_function_node
 
-    def replace_operator_node(self, node):
+    def replace_operator_node(
+        self, node: xlcalculator.ast_nodes.OperatorNode
+    ) -> xlcalculator.ast_nodes.OperatorNode:
         modified_left = self.update_ast(node.left) if node.left else None
         modified_right = self.update_ast(node.right) if node.right else None
         modified_operator_node = xlcalculator.ast_nodes.OperatorNode(node.token)

@@ -230,59 +230,80 @@ class SeriesUpdater:
     def __init__(self, series_list):
         self.series_list = series_list
 
+    def update_series_header_indexes(self, series_id, row_delta, column_delta):
+        """Update the series header indexes by adding the respective deltas."""
+        return (
+            series_id.series_header_cell_column + column_delta,
+            series_id.series_header_cell_row + row_delta,
+        )
+
+    def find_series_by_column(self, series_id, updated_column):
+        """Find a series by the updated column index if the sheet names match."""
+        for series in self.series_list:
+            if (
+                series.series_id.sheet_name == series_id.sheet_name
+                and series.series_id.series_header_cell_column == updated_column
+            ):
+                return series.series_id
+        return None
+
+    def find_series_by_row(self, series_id, updated_row):
+        """Find a series by the updated row index if the sheet names match."""
+        for series in self.series_list:
+            if (
+                series.series_id.sheet_name == series_id.sheet_name
+                and series.series_id.series_header_cell_row == updated_row
+            ):
+                return series.series_id
+        return None
+
+    def find_series_by_row_and_column(self, series_id, updated_row, updated_column):
+        """Find a series by both updated row and column indexes if the sheet names match."""
+        for series in self.series_list:
+            if (
+                series.series_id.sheet_name == series_id.sheet_name
+                and series.series_id.series_header_cell_row == updated_row
+                and series.series_id.series_header_cell_column == updated_column
+            ):
+                return series.series_id
+        return None
+
     def add_column_delta_to_series_id(
         self,
         series_id: SeriesId,
         series_id_start_row_index_delta,
         series_id_start_column_index_delta,
     ):
-
-        updated_series_header_cell_column = (
-            series_id.series_header_cell_column + series_id_start_column_index_delta
-        )
-        updated_series_header_cell_row = (
-            series_id.series_header_cell_row + series_id_start_row_index_delta
+        """Apply column and row deltas to the series ID and find the matching series ID."""
+        updated_column, updated_row = self.update_series_header_indexes(
+            series_id,
+            series_id_start_row_index_delta,
+            series_id_start_column_index_delta,
         )
 
         if (
             series_id_start_column_index_delta > 0
             and series_id_start_row_index_delta == 0
         ):
-
-            for series in self.series_list:
-                if (
-                    series.series_id.sheet_name == series_id.sheet_name
-                    and series.series_id.series_header_cell_column
-                    == updated_series_header_cell_column
-                ):
-                    return series.series_id
+            return self.find_series_by_column(series_id, updated_column) or series_id
 
         elif (
             series_id_start_column_index_delta == 0
             and series_id_start_row_index_delta > 0
         ):
+            return self.find_series_by_row(series_id, updated_row) or series_id
 
-            for series in self.series_list:
-                if (
-                    series.series_id.sheet_name == series_id.sheet_name
-                    and series.series_id.series_header_cell_row
-                    == updated_series_header_cell_row
-                ):
-                    return series.series_id
         elif (
             series_id_start_column_index_delta > 0
             and series_id_start_row_index_delta > 0
         ):
+            return (
+                self.find_series_by_row_and_column(
+                    series_id, updated_row, updated_column
+                )
+                or series_id
+            )
 
-            for series in self.series_list:
-                if (
-                    series.series_id.sheet_name == series_id.sheet_name
-                    and series.series_id.series_header_cell_row
-                    == updated_series_header_cell_row
-                    and series.series_id.series_header_cell_column
-                    == updated_series_header_cell_column
-                ):
-                    return series.series_id
         else:
             return series_id
 

@@ -347,7 +347,7 @@ class ASTGenerator:
 
 
 class FormulaGenerator:
-    """Creates instances of ASTGenerator given two formula_ast objects"""
+    """Creates generic formula given two formula_ast objects"""
 
     @staticmethod
     def get_ast_generator(

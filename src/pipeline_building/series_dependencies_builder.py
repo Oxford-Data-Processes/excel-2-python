@@ -41,7 +41,6 @@ class SeriesDependenciesBuilder:
         series_ids = []
         for series_range_string in series_range_strings:
 
-            print("series_range_string", series_range_string)
             series_id_strings = ast.literal_eval(str(series_range_string))[0]
             for series_id_string in series_id_strings:
                 series_id = SeriesIdLoader.load_series_id_from_string(series_id_string)

@@ -3,7 +3,7 @@ import pandas as pd
 import ast
 import numpy as np
 
-from ast_transformation.formula_generator import SeriesIdLoader
+from ast_transformation.formula_generator_old import SeriesIdLoader
 
 
 class FormulaEvaluator:

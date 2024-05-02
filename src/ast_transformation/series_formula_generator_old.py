@@ -1,6 +1,6 @@
 from ast_transformation.cell_range_implementer import CellRangeImplementer
 from ast_transformation.formula_checker import FormulaChecker
-from ast_transformation.formula_generator import FormulaGenerator
+from ast_transformation.formula_generator_old import FormulaGenerator
 
 
 class SeriesFormulaGenerator:

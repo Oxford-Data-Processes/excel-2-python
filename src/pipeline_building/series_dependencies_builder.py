@@ -1,6 +1,6 @@
 import xlcalculator
 import ast
-from ast_transformation.formula_generator import SeriesIdLoader
+from ast_transformation.formula_generator_old import SeriesIdLoader
 
 
 class SeriesDependenciesBuilder:

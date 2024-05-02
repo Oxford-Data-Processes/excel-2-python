@@ -46,25 +46,6 @@ class DeltaCalculator:
     ) -> Tuple[int, int]:
         return tuple(y - x for x, y in zip(indexes1, indexes2))
 
-    @staticmethod
-    def calculate_series_id_index_deltas(
-        series_ids1: List[SeriesId], series_ids2: List[SeriesId]
-    ) -> Tuple[int, int]:
-        row_index_delta = (
-            series_ids2[0].series_header_cell_row
-            - series_ids1[0].series_header_cell_row
-        )
-
-        column_index_delta = (
-            series_ids2[0].series_header_cell_column
-            - series_ids1[0].series_header_cell_column
-        )
-
-        return (
-            row_index_delta,
-            column_index_delta,
-        )
-
 
 class FormulaGenerator:
 
@@ -129,24 +110,13 @@ class FormulaGenerator:
         node1_tuple = ast.literal_eval(node1_value)
         node2_tuple = ast.literal_eval(node2_value)
 
-        series_ids_strings_1, row_indexes_1 = node1_tuple
-        series_ids_strings_2, row_indexes_2 = node2_tuple
-
-        series_ids_1 = DeltaCalculator.load_series_ids(series_ids_strings_1)
-        series_ids_2 = DeltaCalculator.load_series_ids(series_ids_strings_2)
+        series_ids_1, row_indexes_1 = node1_tuple
+        _, row_indexes_2 = node2_tuple
 
         row_index_deltas = DeltaCalculator.calculate_index_deltas(
             row_indexes_1, row_indexes_2
         )
-        series_id_deltas = DeltaCalculator.calculate_series_id_index_deltas(
-            series_ids_1, series_ids_2
-        )
 
-        generic_formula = (
-            series_ids_strings_1,
-            row_indexes_1,
-            row_index_deltas,
-            series_id_deltas,
-        )
+        generic_formula = (series_ids_1, row_indexes_1, row_index_deltas)
 
         return generic_formula

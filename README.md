@@ -31,6 +31,7 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - There must be two or more rows for each column with values
 - Any column references must refer to a column with only one series of data with column header as first row
 - Dates must be in number (general) format: Eg. 44501 or 45085.5
+- Formulas in a horizontal series can only reference other cells from a horizontal series (same applies for vertical)
 
 Supported functions:
 

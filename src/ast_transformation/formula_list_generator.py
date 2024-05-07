@@ -23,11 +23,18 @@ class FormulaListGenerator:
         series_tuple, indexes, deltas = parts
         updated_indexes = (indexes[0] + index_increment, indexes[1] + index_increment)
         updated_tvalue = f"(({repr(series_tuple[0])},), {updated_indexes}, {deltas})"
-        return RangeNode(
-            xlcalculator.tokenizer.f_token(
-                tvalue=updated_tvalue, ttype="operand", tsubtype="text"
-            )
+        function_token = xlcalculator.tokenizer.f_token(
+            tvalue="SUM", ttype="function", tsubtype=""
         )
+        result_function = FunctionNode(function_token)
+        result_function.args = [
+            RangeNode(
+                xlcalculator.tokenizer.f_token(
+                    tvalue=updated_tvalue, ttype="operand", tsubtype="text"
+                )
+            )
+        ]
+        return result_function
 
     def replace_function_node(self, node, index_increment):
         modified_args = [self.update_ast(arg, index_increment) for arg in node.args]

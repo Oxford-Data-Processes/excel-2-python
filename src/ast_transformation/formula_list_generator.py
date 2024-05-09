@@ -2,12 +2,13 @@ import ast
 import xlcalculator
 import copy
 from xlcalculator.ast_nodes import RangeNode, FunctionNode, OperatorNode
-import xlcalculator.tokenizer
+from xlcalculator.tokenizer import f_token
 
 
 class FormulaListGenerator:
-    def __init__(self, formula_ast):
+    def __init__(self, formula_ast, series_dict):
         self.formula_ast = formula_ast
+        self.series_dict = series_dict
 
     def update_ast(self, node, index_increment):
         if isinstance(node, RangeNode):
@@ -21,20 +22,30 @@ class FormulaListGenerator:
     def replace_range_node(self, node, index_increment):
         parts = ast.literal_eval(node.tvalue)
         series_tuple, indexes, deltas = parts
-        updated_indexes = (indexes[0] + index_increment, indexes[1] + index_increment)
-        updated_tvalue = f"(({repr(series_tuple[0])},), {updated_indexes}, {deltas})"
-        function_token = xlcalculator.tokenizer.f_token(
-            tvalue="SUM", ttype="function", tsubtype=""
+        start_new_index, end_new_index = (
+            indexes[0] + index_increment,
+            indexes[1] + index_increment,
         )
-        result_function = FunctionNode(function_token)
-        result_function.args = [
-            RangeNode(
-                xlcalculator.tokenizer.f_token(
-                    tvalue=updated_tvalue, ttype="operand", tsubtype="text"
-                )
+
+        array_values = [self.series_dict.get(series_id) for series_id in series_tuple]
+
+        print("ARRAY VALUES")
+        print(array_values)
+
+        array_row_nodes = []
+        for row in array_values:
+            row_node = FunctionNode(
+                f_token(tvalue="ARRAYROW", ttype="function", tsubtype="")
             )
-        ]
-        return result_function
+            row_node.args = [val for val in row]
+            array_row_nodes.append(row_node)
+
+        array_node = FunctionNode(
+            f_token(tvalue="ARRAY", ttype="function", tsubtype="")
+        )
+        array_node.args = array_row_nodes
+
+        return array_node
 
     def replace_function_node(self, node, index_increment):
         modified_args = [self.update_ast(arg, index_increment) for arg in node.args]

@@ -27,10 +27,10 @@ class FormulaListGenerator:
             indexes[1] + index_increment,
         )
 
-        array_values = [self.series_dict.get(series_id) for series_id in series_tuple]
-
-        print("ARRAY VALUES")
-        print(array_values)
+        array_values = [
+            self.series_dict.get(series_id)[start_new_index : end_new_index + 1]
+            for series_id in series_tuple
+        ]
 
         array_row_nodes = []
         for row in array_values:

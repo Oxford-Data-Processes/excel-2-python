@@ -37,7 +37,13 @@ class FormulaListGenerator:
             row_node = FunctionNode(
                 f_token(tvalue="ARRAYROW", ttype="function", tsubtype="")
             )
-            row_node.args = (val for val in row)
+            row_node_args = []
+            for value in row:
+                if isinstance(value, str):
+                    value = f'"{value}"'
+                row_node_args.append(value)
+
+            row_node.args = row_node_args
             array_row_nodes.append(row_node)
 
         array_node = FunctionNode(

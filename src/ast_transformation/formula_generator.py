@@ -44,7 +44,10 @@ class DeltaCalculator:
     def calculate_index_deltas(
         indexes1: Tuple[int, int], indexes2: Tuple[int, int]
     ) -> Tuple[int, int]:
-        return tuple(y - x for x, y in zip(indexes1, indexes2))
+        return tuple(
+            (y - x if x is not None and y is not None else None)
+            for x, y in zip(indexes1, indexes2)
+        )
 
 
 class FormulaGenerator:
@@ -71,6 +74,7 @@ class FormulaGenerator:
         elif isinstance(ast1, xlcalculator.ast_nodes.OperatorNode) and isinstance(
             ast2, xlcalculator.ast_nodes.OperatorNode
         ):
+
             if ast1.token.tvalue == ast2.token.tvalue:
                 modified_left = (
                     FormulaGenerator.traverse_and_replace(ast1.left, ast2.left)

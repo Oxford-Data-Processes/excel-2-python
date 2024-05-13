@@ -38,7 +38,6 @@ Supported functions:
 - SUM
 - AVERAGE
 - IF
-- VLOOKUP
 - INDEX
 - MATCH
 - COUNT

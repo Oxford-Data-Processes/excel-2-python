@@ -7,8 +7,6 @@ class FormulaEvaluator:
 
     def evaluate_formula(self, formula_string):
 
-        print("Evaluating formula: ", formula_string)
-
         # Ensure the formula starts with an '=' sign for consistent parsing
         if not formula_string.startswith("="):
             formula_string = "=" + formula_string

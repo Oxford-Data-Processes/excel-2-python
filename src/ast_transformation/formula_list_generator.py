@@ -6,9 +6,9 @@ from xlcalculator.tokenizer import f_token
 
 
 class FormulaListGenerator:
-    def __init__(self, formula_ast, series_dict):
+    def __init__(self, formula_ast, series_values_dict):
         self.formula_ast = formula_ast
-        self.series_dict = series_dict
+        self.series_values_dict = series_values_dict
 
     def update_ast(self, node, index_increment):
         if isinstance(node, RangeNode):
@@ -28,7 +28,7 @@ class FormulaListGenerator:
         )
 
         array_values = [
-            self.series_dict.get(series_id)[start_new_index : end_new_index + 1]
+            self.series_values_dict.get(series_id)[start_new_index : end_new_index + 1]
             for series_id in series_tuple
         ]
 

@@ -93,8 +93,6 @@ class FormulaGenerator:
         node1: xlcalculator.ast_nodes.RangeNode, node2: xlcalculator.ast_nodes.RangeNode
     ) -> xlcalculator.ast_nodes.RangeNode:
         generic_formula = FormulaGenerator.get_generic_formula(node1, node2)
-        print(type(generic_formula))
-        print(generic_formula)
         return xlcalculator.ast_nodes.RangeNode(
             xlcalculator.tokenizer.f_token(
                 tvalue=generic_formula, ttype="operand", tsubtype="range"

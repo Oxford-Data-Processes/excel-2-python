@@ -1,6 +1,6 @@
 import xlcalculator
 import ast
-from ast_transformation.formula_generator import SeriesIdLoader
+from ast_transformation.formula_generator_old import SeriesIdLoader
 
 
 class SeriesDependenciesBuilder:
@@ -11,7 +11,7 @@ class SeriesDependenciesBuilder:
         series_dependencies = {}
 
         # Iterate through each series_id and its corresponding formula AST
-        for series_id, formula_1_ast_series in formula_1_ast_series_list:
+        for series_id, formula_1_ast_series in formula_1_ast_series_list.items():
             # Get the list of dependent series_ids from the AST
             dependencies_series_ids = SeriesDependenciesBuilder.get_series_ids(
                 formula_1_ast_series
@@ -40,7 +40,8 @@ class SeriesDependenciesBuilder:
 
         series_ids = []
         for series_range_string in series_range_strings:
-            series_id_strings = ast.literal_eval(series_range_string)[0]
+
+            series_id_strings = ast.literal_eval(str(series_range_string))[0]
             for series_id_string in series_id_strings:
                 series_id = SeriesIdLoader.load_series_id_from_string(series_id_string)
                 series_ids.append(series_id)

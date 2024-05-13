@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Optional, Union
 from objects import Cell, HeaderLocation, CellRange, Column, CellRangeColumn, Series
 
 from excel_utils import ExcelUtils
-from ast_transformation.formula_generator import SeriesIdLoader
+from ast_transformation.formula_generator_old import SeriesIdLoader
 
 
 class CellRangeImplementer:

@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from objects import Cell, Series, Worksheet
+from objects import Cell, Series, SeriesId, Worksheet
 
 
 class SeriesMapper:
@@ -39,3 +39,12 @@ class SeriesMapper:
                 for index, cell in enumerate(cells):
                     series_mapping[worksheet][cell] = (index, s)
         return series_mapping
+
+    @staticmethod
+    def get_series_from_series_id(
+        series_id: SeriesId, series_dict: dict[str, Series]
+    ) -> Series:
+        sheet_name = series_id.sheet_name
+        series_list = series_dict[sheet_name]
+        series = next(series for series in series_list if series.series_id == series_id)
+        return series

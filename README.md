@@ -23,6 +23,8 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - No Excel "table" objects
 - No pivot tables
 - No hidden tabs
+- No fixed columns in formulas
+- All formulas are draggable
 - No spaces or pipes in tab names
 - No circular references
 - No cell references to column headers in formulas
@@ -38,15 +40,13 @@ Supported functions:
 - SUM
 - AVERAGE
 - IF
-- VLOOKUP
 - INDEX
 - MATCH
 - COUNT
 - COUNTIF
 - COUNTA
-- COUNTIFS
 - SUMIF
-- SUMIFS
+- REPLACE
 - CONCATENATE
 - LEFT
 - RIGHT

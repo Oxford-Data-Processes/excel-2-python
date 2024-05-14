@@ -22,22 +22,43 @@ class FormulaListGenerator:
     def replace_range_node(self, node, index_increment):
         parts = ast.literal_eval(node.tvalue)
         series_tuple, indexes, deltas = parts
-        start_new_index, end_new_index = (
-            indexes[0] + index_increment,
-            indexes[1] + index_increment,
-        )
 
-        array_values = [
-            self.series_values_dict.get(series_id)[start_new_index : end_new_index + 1]
-            for series_id in series_tuple
-        ]
+        if indexes == (None, None):
+            array_values = [
+                self.series_values_dict.get(series_id) for series_id in series_tuple
+            ]
+        else:
+
+            start_new_index, end_new_index = (
+                indexes[0] + deltas[0] * index_increment,
+                indexes[1] + deltas[0] * index_increment,
+            )
+
+            array_values = [
+                self.series_values_dict.get(series_id)[
+                    start_new_index : end_new_index + 1
+                ]
+                for series_id in series_tuple
+            ]
+
+            print("Start new index", start_new_index)
+            print("End new index", end_new_index)
+            print("ARRAY VALUES: ", array_values)
 
         array_row_nodes = []
         for row in array_values:
             row_node = FunctionNode(
                 f_token(tvalue="ARRAYROW", ttype="function", tsubtype="")
             )
-            row_node.args = (val for val in row)
+            row_node_args = []
+            for value in row:
+                if isinstance(value, str):
+                    value = f'"{value}"'
+                if value is None:
+                    value = ""
+                row_node_args.append(value)
+
+            row_node.args = row_node_args
             array_row_nodes.append(row_node)
 
         array_node = FunctionNode(

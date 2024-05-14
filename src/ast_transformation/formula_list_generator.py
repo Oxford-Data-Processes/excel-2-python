@@ -41,10 +41,6 @@ class FormulaListGenerator:
                 for series_id in series_tuple
             ]
 
-            print("Start new index", start_new_index)
-            print("End new index", end_new_index)
-            print("ARRAY VALUES: ", array_values)
-
         array_row_nodes = []
         for row in array_values:
             row_node = FunctionNode(

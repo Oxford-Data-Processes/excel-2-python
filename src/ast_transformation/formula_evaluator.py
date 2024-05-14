@@ -17,7 +17,7 @@ class FormulaEvaluator:
 
         if isinstance(result, formulas.functions.Array):
             if result.shape == ():
-                return result
+                return result.item()
             return result[0][0]
         elif isinstance(result, float):
             return result

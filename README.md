@@ -43,9 +43,8 @@ Supported functions:
 - COUNT
 - COUNTIF
 - COUNTA
-- COUNTIFS
 - SUMIF
-- SUMIFS
+- REPLACE
 - CONCATENATE
 - LEFT
 - RIGHT

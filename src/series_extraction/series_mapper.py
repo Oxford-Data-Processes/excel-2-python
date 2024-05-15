@@ -42,7 +42,7 @@ class SeriesMapper:
 
     @staticmethod
     def get_series_from_series_id(
-        series_id: SeriesId, series_dict: dict[str, Series]
+        series_id: SeriesId, series_dict: dict[str, List[Series]]
     ) -> Series:
         sheet_name = series_id.sheet_name
         series_list = series_dict[sheet_name]

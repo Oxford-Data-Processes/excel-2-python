@@ -69,4 +69,3 @@ Supported functions:
 
 - Cells that start with "'=" don't work
 - Formulas that have strings with colons Eg. =CONCATENATE(A2,":",B2) don't work
-- When a table is horizontal (header_location="left") then the value at the top of this table (the final value when turned sideways) must not be a text value

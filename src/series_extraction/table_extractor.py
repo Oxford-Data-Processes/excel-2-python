@@ -3,10 +3,9 @@ from objects import (
     Worksheet,
     Table,
     LocatedTables,
-    HeaderLocation,
     Cell,
     CellRange,
-    WorkbookData
+    WorkbookData,
 )
 from excel_utils import ExcelUtils
 from typing import Dict, List, Set, Tuple, Optional, Union
@@ -173,14 +172,9 @@ class DataExtractor:
                 boolean, header_values = DataExtractor._are_first_row_values_strings(
                     table.range, sheet_data
                 )
-                if boolean:
-                    table.header_location = HeaderLocation.TOP
-                    table.header_values = header_values
-                else:
-                    table.header_location = HeaderLocation.LEFT
-                    table.header_values = DataExtractor._get_first_column_values(
-                        table.range, sheet_data
-                    )
+
+                table.header_values = header_values
+
         return located_tables
 
 

@@ -36,6 +36,7 @@ class ExcelUtils:
 
     @staticmethod
     def extract_cell_ranges_from_string(cell_range_string: str):
+        sheet_name = None
         if ":" in cell_range_string:
             cell_range_start, cell_range_end = cell_range_string.split(":")
         else:
@@ -44,6 +45,7 @@ class ExcelUtils:
 
         if "!" in cell_range_start:
             sheet_name, cell_range_start = cell_range_start.split("!")
+
         if "!" in cell_range_end:
             sheet_name, cell_range_end = cell_range_end.split("!")
 

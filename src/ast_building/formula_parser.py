@@ -1,10 +1,13 @@
-import xlcalculator
+import formulas
+from formulas.builder import AstBuilder
+from typing import Tuple, List
 
 
 class FormulaParser:
 
     @staticmethod
-    def parse_formula(formula: str) -> xlcalculator.ast_nodes.ASTNode:
-        parser = xlcalculator.parser.FormulaParser()
-        ast = parser.parse(formula=formula, named_ranges={})
+    def parse_formula(
+        formula: str,
+    ) -> Tuple[list, AstBuilder]:
+        ast = formulas.Parser().ast(formula)
         return ast

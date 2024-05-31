@@ -10,14 +10,11 @@ class SeriesMapper:
         """Get list of all Excel cells in a series"""
         cells = []
         offset = range(series.series_length)
-        is_top_header = series.header_location.value == "top"
-        is_left_header = series.header_location.value == "left"
 
         for i in offset:
             cell = Cell(
-                column=series.series_starting_cell.column
-                + (i if is_left_header else 0),
-                row=series.series_starting_cell.row + (i if is_top_header else 0),
+                column=series.series_starting_cell.column + i,
+                row=series.series_starting_cell.row + i,
                 coordinate=None,
                 value=None,
                 value_type=None,

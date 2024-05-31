@@ -2,7 +2,7 @@ import xlcalculator
 import ast
 from typing import Dict, List, Tuple, Optional, Union
 
-from objects import Cell, HeaderLocation, CellRange, Column, CellRangeColumn, Series
+from objects import Cell, CellRange, Column, CellRangeColumn, Series
 
 from excel_utils import ExcelUtils
 from ast_transformation.formula_generator_old import SeriesIdLoader
@@ -185,16 +185,9 @@ class CellRangeImplementer:
         cell_row = cell_value.row
         cell_column = cell_value.column
 
-        if series.header_location == HeaderLocation.TOP:
-            return self.create_cell_range_top_header(
-                series_start_index, series_end_index, cell_row, cell_column, sheet_name
-            )
-        elif series.header_location == HeaderLocation.LEFT:
-            return self.create_cell_range_left_header(
-                series_start_index, series_end_index, cell_row, cell_column, sheet_name
-            )
-        else:
-            raise Exception("Header location is not valid")
+        self.create_cell_range_top_header(
+            series_start_index, series_end_index, cell_row, cell_column, sheet_name
+        )
 
     def update_ast(
         self, ast: xlcalculator.ast_nodes.ASTNode

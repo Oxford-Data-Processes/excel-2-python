@@ -77,14 +77,12 @@ class ExcelBuilder:
         """Fill worksheet cells with data from a series, either formulas or values."""
         start_row = series.series_starting_cell.row
         start_col = series.series_starting_cell.column
-        header_location = series.header_location.value
         formulas = series.formulas
         values = series.values
 
         for i in range(series.series_length):
-            row = start_row + i if header_location == "top" else start_row
-            col = start_col + i if header_location == "left" else start_col
-            cell = worksheet.cell(row=row, column=col)
+            row = start_row + i
+            cell = worksheet.cell(row=row, column=start_col)
             if not values_only:
                 cell.value = formulas[i] if formulas != [None, None] else values[i]
             else:

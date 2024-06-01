@@ -52,6 +52,18 @@ class ExcelUtils:
         return sheet_name, f"{cell_range_start}:{cell_range_end}"
 
     @staticmethod
+    def get_range_from_coordinates(
+        start_column: int,
+        start_row: int,
+        end_column: int,
+        end_row: int,
+        is_column_range: bool = False,
+    ) -> str:
+        if is_column_range:
+            return f"{ExcelUtils.get_column_letter_from_number(start_column)}:{ExcelUtils.get_column_letter_from_number(end_column)}"
+        return f"{ExcelUtils.get_coordinate_from_column_and_row(start_column, start_row)}:{ExcelUtils.get_coordinate_from_column_and_row(end_column, end_row)}"
+
+    @staticmethod
     def get_coordinates_from_range(
         cell_range: str,
     ) -> Tuple[int, Optional[int], int, Optional[int], bool]:

@@ -1,5 +1,7 @@
 # excel-2-python
 
+Converts Excel formulas to Python code. Similar to the open-source library 'formulas' but instead of providing formulas and cells, this is built specifically for Excel tables. Excel tables are converted to pandas dataframes and the formulas are converted to pandas operations.
+
 Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 
 ### Setup
@@ -10,12 +12,6 @@ Data Flow Diagram: https://miro.com/app/board/uXjVKaiToC4=/
 - Install requirements with `pip install -r requirements.txt`
 - Install ipykernel to run jupyter notebooks `pip install ipykernel`
 - For AWS CLI follow https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html ensure you use https://d-9c677c26a6.awsapps.com/start#/
-
-### TODO:
-
-1. FormulaGenerator
-2. SeriesDependenciesBuilder
-3. DAGSorter
 
 ### Requirements for reduced Excel
 
@@ -64,8 +60,3 @@ Supported functions:
 - ROUNDDOWN
 - ROUNDUP
 - TRIM
-
-### Bugs
-
-- Cells that start with "'=" don't work
-- Formulas that have strings with colons Eg. =CONCATENATE(A2,":",B2) don't work
